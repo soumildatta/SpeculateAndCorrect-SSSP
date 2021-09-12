@@ -30,3 +30,6 @@
 *.exe
 *.out
 *.app
+
+# Unnecessary Folders
+test-sample-code
