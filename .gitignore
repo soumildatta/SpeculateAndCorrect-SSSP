@@ -1,3 +1,7 @@
+# Mac Generated Items
+.DS_Store
+.vscode/
+
 # Prerequisites
 *.d
 
