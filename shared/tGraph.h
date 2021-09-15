@@ -54,10 +54,6 @@ struct tGraph : public list<tEdgeListItem>
     // TODO: Figure out what this does
     inline uint32_t getNodeID(unordered_map<string, uint32_t> &nodeIdToIndex, const string &nodeID)
     {
-        // If the nodeID does not exist in the map, insert
-        // if(nodeIdToIndex.count(nodeID) == 0u) return nodeIdToIndex[nodeID] = nodeIdToIndex.size();
-        // else return nodeIdToIndex[nodeID];
-
         return nodeIdToIndex.count(nodeID) == 0u ? nodeIdToIndex[nodeID] = nodeIdToIndex.size() : nodeIdToIndex[nodeID];
     }
 

@@ -1,6 +1,7 @@
 // TEST FILE: Only used for testing
 
 #include "tGraph.h"
+#include "tTimer.h"
 
 int main(int argc, char *argv[])
 {
@@ -11,11 +12,15 @@ int main(int argc, char *argv[])
     // It skips the lines not starting with c 
     // Has right number of nodes and edges
 
+    tTimer time;
+
     tGraph graph;
     graph.parseDimacs(filename);
 
-    cout << graph.nNodes << endl;
-    cout << graph.getnEdges();
+    // cout << graph.nNodes << endl;
+    // cout << graph.getnEdges();
+
+    cout << time.getTime();
 
     return 0;
 }
