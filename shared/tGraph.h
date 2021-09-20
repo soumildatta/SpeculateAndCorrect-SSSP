@@ -42,7 +42,7 @@ struct tGraph : public list<tEdgeListItem>
 
     inline tGraph(void) : nNodes(0u)
     {
-        // clear();
+        clear();
         return;
     }
 
@@ -92,7 +92,6 @@ struct tGraph : public list<tEdgeListItem>
             // ! PRINTING OUT FOR DEBUGGING
             // cout << src << "," << dest << "," << weight << endl;
 
-            // TODO: Add parsed items to edge list struct
             edge.proximalNodeIdx = getNodeID(nodeIdToIndex, src);
             edge.distalNodeIdx = getNodeID(nodeIdToIndex, dest);
             // TODO: Make sure no empty weights
