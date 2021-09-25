@@ -2,6 +2,7 @@
 
 #include "tGraph.h"
 #include "tTimer.h"
+#include "tEdgeList.h"
 
 int main(int argc, char *argv[])
 {
@@ -14,8 +15,8 @@ int main(int argc, char *argv[])
 
     tTimer time;
 
-    tGraph graph;
-    graph.parseDimacs(filename);
+    tEdgeList edgeList;
+    edgeList.parseDimacs(filename);
 
     // cout << graph.nNodes << endl;
     // cout << graph.getnEdges();
