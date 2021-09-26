@@ -13,15 +13,19 @@ int main(int argc, char *argv[])
     // It skips the lines not starting with c 
     // Has right number of nodes and edges
 
-    tTimer time;
+    // tTimer time;
 
-    tEdgeList edgeList;
-    edgeList.parseDimacs(filename);
+    // tEdgeList edgeList;
+    // edgeList.parseDimacs(filename);
 
-    // cout << graph.nNodes << endl;
-    // cout << graph.getnEdges();
+    // // cout << graph.nNodes << endl;
+    // // cout << graph.getnEdges();
 
-    cout << time.getTime();
+    // cout << time.getTime();
+
+    tGraph graph;
+    graph.readEdgeList(filename);
+
 
     return 0;
 }

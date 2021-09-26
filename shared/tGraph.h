@@ -7,6 +7,10 @@ using std::filesystem::path;
 #include <vector>
 using std::vector;
 
+#include <iostream>
+using std::cout;
+using std::endl;
+
 #include <stdlib.h>
 #include <cstdint>
 
@@ -40,10 +44,16 @@ struct tGraph
     // Constructor
     inline tGraph(void) : nNodes(0u), nEdges(0u) { return; }
 
-    // inline double readEdgeList(const path &filename)
-    // {
+    inline double convertEdgeList(tEdgeList &edgeList)
+    {
+        nodes.clear();
+        edges.clear();
 
-    // }
+        nodes.resize(edgeList.getnNodes(), tCSRNode());
+        edges.reserve(edgeList.getnEdges());
+
+        edgeList.sort(compareEntries);
+    }
 };
 
 #endif

@@ -111,4 +111,9 @@ struct tEdgeList : public list<tEdgeListItem>
     }
 };
 
+inline bool compareEntries(const tEdgeListEntry &lEntry, const tEdgeListEntry &rEntry)
+{
+    return lEntry.proximalNodeIndex != rEntry.proximalNodeIndex ? lEntry.proximalNodeIndex < rEntry.proximalNodeIndex : lEntry.distalNodeIndex < rEntry.distalNodeIndex;
+}
+
 #endif
