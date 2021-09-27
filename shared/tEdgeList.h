@@ -105,15 +105,14 @@ struct tEdgeList : public list<tEdgeListItem>
         file.close();
     }
 
-    inline uint32_t getnEdges() const
-    {
-        return size();
-    }
+    inline uint32_t getnEdges() const { return size(); }
+
+    inline uint32_t getnNodes() const { return nNodes; }
 };
 
-inline bool compareEntries(const tEdgeListEntry &lEntry, const tEdgeListEntry &rEntry)
+inline bool compareEntries(const tEdgeListItem &lEntry, const tEdgeListItem &rEntry)
 {
-    return lEntry.proximalNodeIndex != rEntry.proximalNodeIndex ? lEntry.proximalNodeIndex < rEntry.proximalNodeIndex : lEntry.distalNodeIndex < rEntry.distalNodeIndex;
+    return lEntry.proximalNodeIdx != rEntry.proximalNodeIdx ? lEntry.proximalNodeIdx < rEntry.proximalNodeIdx : lEntry.distalNodeIdx < rEntry.distalNodeIdx;
 }
 
 #endif
