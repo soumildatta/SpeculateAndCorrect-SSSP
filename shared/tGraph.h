@@ -1,9 +1,6 @@
 #ifndef TGRAPH_H
 #define TGRAPH_H
 
-#include <filesystem>
-using std::filesystem::path;
-
 #include <vector>
 using std::vector;
 

@@ -40,3 +40,10 @@
 
 # Unnecessary Folders
 test-sample-code
+/.metadata/
+
+# Eclipse
+*/Debug/
+*.cproject
+*.project
+*.settings
