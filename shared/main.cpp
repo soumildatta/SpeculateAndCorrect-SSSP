@@ -1,4 +1,4 @@
-// TEST FILE: Only used for testing
+//! TEST FILE: Only used for testing
 
 #include "tGraph.h"
 #include "tTimer.h"
@@ -13,7 +13,7 @@ int main(int argc, char *argv[])
     // It skips the lines not starting with c 
     // Has right number of nodes and edges
 
-    // tTimer time;
+    tTimer time;
 
     tEdgeList edgeList;
     edgeList.parseDimacs(filename);
@@ -21,10 +21,10 @@ int main(int argc, char *argv[])
     // // cout << graph.nNodes << endl;
     // // cout << graph.getnEdges();
 
-    // cout << time.getTime();
-
     tGraph graph;
     graph.convertEdgeList(edgeList);
+
+    cout << time.getTime();
 
     return 0;
 }
