@@ -13,6 +13,9 @@ using std::string;
 using std::getline;
 using std::literals::string_literals::operator""s;
 
+#include <filesystem>
+using std::filesystem::path;
+
 #include <fstream>
 using std::ifstream;
 
@@ -57,9 +60,9 @@ struct tEdgeList : public list<tEdgeListItem>
         return nodeIdToIndex.count(nodeID) == 0u ? nodeIdToIndex[nodeID] = nodeIdToIndex.size() : nodeIdToIndex[nodeID];
     }
 
-    inline void parseDimacs(const string &filename)
+    inline void parseDimacs(const path &filename)
     {
-        ifstream file(filename);
+        ifstream file(filename.c_str());
         if(file.peek() == ifstream::traits_type::eof())
         {
             // TODO: throw error here
