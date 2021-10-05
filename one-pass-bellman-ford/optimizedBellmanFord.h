@@ -6,6 +6,9 @@
     using std::cout; 
     using std::endl;
 
-void optimizedBellmanFord();
+#include "tTimer.h"
+#include "tGraph.h"
+
+void optimizedBellmanFord(tGraph &graph,  const uint32_t &sourceNode);
 
 #endif
