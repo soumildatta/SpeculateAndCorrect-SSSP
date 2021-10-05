@@ -6,6 +6,9 @@
     using std::cout; 
     using std::endl;
 
-void bellmanFord();
+#include "tTimer.h"
+#include "tGraph.h"
+
+double bellmanFord(tGraph &graph, const uint32_t &sourceNode);
 
 #endif
