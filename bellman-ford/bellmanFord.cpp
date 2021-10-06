@@ -22,6 +22,7 @@ double bellmanFord(tGraph &graph, const uint32_t &sourceNode)
     vector<nodeCost> nodeCosts;
     nodeCosts.clear();
     nodeCosts.resize(nNodes, nodeCost());
+    nodeCosts[sourceNode] = nodeCost(sourceNode, 0);
 
     bool complete { false };
 
