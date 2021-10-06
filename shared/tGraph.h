@@ -38,7 +38,7 @@ struct tGraph
     uint32_t nNodes;
     uint32_t nEdges;
 
-    // TODO: Memberlist here
+	#define tGraphMemberList nodes, edges, edgeList, nNodes, nEdges
 
     // Constructor
     inline tGraph(void) : nNodes(0u), nEdges(0u) { return; }
