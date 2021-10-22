@@ -9,6 +9,9 @@
 #include <list>
     using std::list;
 
+#include <algorithm>
+    using std::min;
+
 #include "tTimer.h"
 #include "tGraph.h"
 
