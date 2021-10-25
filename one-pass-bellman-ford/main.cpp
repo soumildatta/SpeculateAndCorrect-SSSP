@@ -13,6 +13,8 @@ int main(int argc, char *argv[])
 	int iterations { atoi(argv[2]) };
 	double totalTime { 0 };
 
+	cout << "Performing Optimized Bellman Ford" << endl;
+
 	for(auto i { 0 }; i < iterations; ++i)
 	{
 		auto time { optimizedBellmanFord(graph, 0u) };

@@ -12,8 +12,6 @@ struct nodeCost
 
 double optimizedBellmanFord(tGraph &graph, const uint32_t &sourceNode)
 {
-	cout << "Performing Optimized Bellman Ford" << endl;
-
 	tTimer timer;
 
 	auto &[tGraphMemberList] { graph };

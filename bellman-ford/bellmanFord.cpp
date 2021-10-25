@@ -12,8 +12,6 @@ struct nodeCost
 
 double bellmanFord(tGraph &graph, const uint32_t &sourceNode)
 {
-    cout << "Performing Standard Bellman-Ford" << endl;
-
     tTimer timer;
 
     auto &[tGraphMemberList] { graph };
