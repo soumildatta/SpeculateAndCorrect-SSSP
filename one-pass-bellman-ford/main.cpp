@@ -3,26 +3,38 @@
 #include "tEdgeList.h"
 #include "tTimer.h"
 
-tGraph processGraph(path &filename);
+tGraph processGraph(const path &filename);
 
 int main(int argc, char *argv[])
 {
-	path file { argv[1] };
+	path filename { argv[1] };
+	tGraph graph { processGraph(filename) };
 
-	tGraph graph { processGraph(file) };
+	int iterations { atoi(argv[2]) };
+	double totalTime { 0 };
 
-    optimizedBellmanFord(graph, 0u);
-    
+	for(auto i { 0 }; i < iterations; ++i)
+	{
+		auto time { optimizedBellmanFord(graph, 0u) };
+		cout << time << endl;
+		totalTime += time;
+	}
+
+	cout << "\nTotal time for " << iterations << " iterations: " << totalTime << endl;
+	cout << "Average time for each iteration: " << totalTime/iterations << endl;
+
     return 0;
 }
 
-tGraph processGraph(path &filename)
+tGraph processGraph(const path &filename)
 {
-	tEdgeList inputGraph;
-	inputGraph.parseDimacs(filename);
+	cout << "Processing Graph" << endl;
+
+	tEdgeList DIMACSEdgeList;
+	DIMACSEdgeList.parseDimacs(filename.c_str());
 
 	tGraph graph;
-	graph.convertEdgeList(inputGraph);
+	graph.convertEdgeList(DIMACSEdgeList);
 
 	return graph;
 }
