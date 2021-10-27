@@ -2,6 +2,7 @@
 #include "tGraph.h"
 #include "tEdgeList.h"
 #include "tTimer.h"
+#include "validation.h"
 
 tGraph processGraph(path &filename);
 
@@ -10,6 +11,7 @@ int main(int argc, char *argv[])
 	// Temporary cmd args parse
 	// TODO: cmd getopt config file
 	path filename { argv[1] };
+	path verifyFile { argv[3] };
 	tGraph graph { processGraph(filename) };
 
 	int iterations { atoi(argv[2]) };
@@ -21,6 +23,9 @@ int main(int argc, char *argv[])
 	{
 		vector<nodeCost> nodeCosts;
 		auto time { bellmanFord(graph, 0u, nodeCosts) };
+
+		cout << readSolution(verifyFile, nodeCosts) << endl;
+
 		cout << time << endl;
 		totalTime += time;
 	}
