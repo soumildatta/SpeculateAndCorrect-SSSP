@@ -14,6 +14,17 @@ using std::endl;
 #include <cstdint>
 
 #include "tEdgeList.h"
+
+struct nodeCost
+{
+	uint32_t proximalNodeIndex;
+	uint32_t cost;
+
+	nodeCost(void) : proximalNodeIndex(~0u), cost(INT32_MAX) { return; }
+	nodeCost(uint32_t _proximalNodeIndex, int32_t _cost) : proximalNodeIndex(_proximalNodeIndex), cost(_cost) { return; }
+	~nodeCost() { return; }
+};
+
 // CSR Representation
 struct tCSRNode
 {

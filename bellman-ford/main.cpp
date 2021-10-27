@@ -19,7 +19,8 @@ int main(int argc, char *argv[])
 
 	for(auto i { 0 }; i < iterations; ++i)
 	{
-		auto time { bellmanFord(graph, 0u) };
+		vector<nodeCost> nodeCosts;
+		auto time { bellmanFord(graph, 0u, nodeCosts) };
 		cout << time << endl;
 		totalTime += time;
 	}
