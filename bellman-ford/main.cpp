@@ -24,9 +24,17 @@ int main(int argc, char *argv[])
 		vector<nodeCost> nodeCosts;
 		auto time { bellmanFord(graph, 0u, nodeCosts) };
 
-		cout << readSolution(verifyFile, nodeCosts) << endl;
+		// Checking solution
+		if(readSolution(verifyFile, nodeCosts))
+		{
+			cout << "o";
+		}
+		else
+		{
+			cout << "x";
+		}
 
-		cout << time << endl;
+//		cout << time << endl;
 		totalTime += time;
 	}
 
