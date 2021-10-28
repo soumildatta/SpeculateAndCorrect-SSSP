@@ -15,6 +15,7 @@ using std::ifstream;
     using std::endl;
 
 #include "tGraph.h"
+#include "UtilityFunctions.h"
 
 enum eSSSPSolutionType : uint8_t
 {
@@ -105,47 +106,12 @@ bool readSolution(const path &filepath, vector<nodeCost> &nodeCosts)
 	ifs.read((char *) parentNodeCosts.data(), sizeof(nodeCost) * nSolutions);
 	ifs.close();
 
-	for(auto &i : parentNodeCosts)
+	if(parentNodeCosts == nodeCosts)
 	{
-		cout << i.cost << endl;
+		return true;
 	}
-
-	return true;
-}
-
-
-template<class T>
-inline bool operator==(const vector<T> &lhs, const vector<T> &rhs)
-{
-    return (lhs.size()*sizeof(T) == rhs.size()*sizeof(T)) ? memcmp(lhs.data(), rhs.data(), sizeof(T) * lhs.size()) == 0 : false;
-}
-
-template<class T>
-inline bool operator!=(const vector<T> &lhs, const vector<T> &rhs)
-{
-    return !(lhs == rhs);
-}
-
-template<class T1, class T2>
-inline bool operator==(const vector<T1> &lhs, const vector<T2> &rhs)
-{
-    return (lhs.size()*sizeof(T1) == rhs.size()*sizeof(T2)) ? memcmp(lhs.data(), rhs.data(), sizeof(T1) * lhs.size()) == 0 : false;
-}
-
-template<class T1, class T2>
-inline bool operator!=(const vector<T1> &lhs, const vector<T2> &rhs)
-{
-    return !(lhs == rhs);
-}
-
-template<class T>
-inline bool operator ==(const vector<T> &lhs, const T *rhs)
-{
-    return memcmp(lhs.data(), rhs, sizeof(T) * lhs.size()) == 0;
-}
-
-template<class T>
-inline bool operator!=(const vector<T> &lhs, const T *rhs)
-{
-    return !(lhs == rhs);
+	else
+	{
+		return false;
+	}
 }

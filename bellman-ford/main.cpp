@@ -28,10 +28,12 @@ int main(int argc, char *argv[])
 		if(readSolution(verifyFile, nodeCosts))
 		{
 			cout << "o";
+			cout.flush();
 		}
 		else
 		{
 			cout << "x";
+			cout.flush();
 		}
 
 //		cout << time << endl;
@@ -49,7 +51,7 @@ tGraph processGraph(path &filename)
 	cout << "Processing Graph" << endl;
 
 	tEdgeList DIMACSEdgeList;
-	DIMACSEdgeList.parseDimacs(filename.c_str());
+	DIMACSEdgeList.importDIMACSEdgeList(filename.c_str());
 
 	tGraph graph;
 	graph.convertEdgeList(DIMACSEdgeList);

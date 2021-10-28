@@ -61,7 +61,7 @@ struct tGraph
         nodes.resize(edgeList.getnNodes(), tCSRNode());
         edges.reserve(edgeList.getnEdges());
 
-        edgeList.sort(compareEntries);
+//        edgeList.sort(tEdgeList::compareEntries);
 
         // At this point, edge list is sorted, and all proximal nodes will be grouped together
 
