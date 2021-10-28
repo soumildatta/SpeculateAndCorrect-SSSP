@@ -15,6 +15,6 @@
 #include "tTimer.h"
 #include "tGraph.h"
 
-double optimizedBellmanFord(tGraph &graph,  const uint32_t &sourceNode);
+double optimizedBellmanFord(tGraph &graph, const uint32_t &sourceNode, vector<nodeCost> &nodeCosts);
 
 #endif
