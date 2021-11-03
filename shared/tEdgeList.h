@@ -61,23 +61,10 @@ struct tEdgeList : public list<tEdgeListItem>
 
     inline virtual ~tEdgeList(void) { return; }
 
-    // TODO: Figure out what this does
     inline uint32_t getNodeID(unordered_map<string, uint32_t> &nodeIdToIndex, const string &nodeID)
     {
         return nodeIdToIndex.count(nodeID) == 0u ? nodeIdToIndex[nodeID] = nodeIdToIndex.size() : nodeIdToIndex[nodeID];
     }
-
-    inline static bool compareEdgeListEntries(const tLineEntry &lEntry, const tLineEntry &rEntry)
-	{
-		if (lEntry.proximalNode != rEntry.proximalNode)
-		{
-			return lEntry.proximalNode < rEntry.proximalNode;
-		}
-		else
-		{
-			return lEntry.distalNode < rEntry.distalNode;
-		}
-	}
 
     inline static bool compareEntries(const tLineEntry &lEntry, const tLineEntry &rEntry)
 	{
@@ -86,7 +73,7 @@ struct tEdgeList : public list<tEdgeListItem>
 
     inline void importDIMACSEdgeList(const string &filename)
 	{
-		tLineEntry edgeString;
+		tLineEntry entry;
 
 		list<tLineEntry> edgeStrings;
 		edgeStrings.clear();
@@ -116,22 +103,22 @@ struct tEdgeList : public list<tEdgeListItem>
 
 			istringstream iss(line);
 			iss >> command;
+
 			// Only lines starting with the 'a' command need to be processed
 			if(command != "a"s) continue;
 
-			// capture all arc string.
 			iss >> src;
 			iss >> dest;
-			iss >> edgeString.weight;
+			iss >> entry.weight;
 
-			edgeString.proximalNode = Format("%16s", src.c_str());
-			edgeString.distalNode = Format("%16s", dest.c_str());
+			entry.proximalNode = Format("%16s", src.c_str());
+			entry.distalNode = Format("%16s", dest.c_str());
 
 			// Store edge and node labels
-			edgeStrings.emplace_back(edgeString);
+			edgeStrings.emplace_back(entry);
 
-			nodeLabels.emplace_back(edgeString.proximalNode);
-			nodeLabels.emplace_back(edgeString.distalNode);
+			nodeLabels.emplace_back(entry.proximalNode);
+			nodeLabels.emplace_back(entry.distalNode);
 		}
 
 		file.close();
@@ -146,7 +133,7 @@ struct tEdgeList : public list<tEdgeListItem>
 			nodeIdToIndex[nodeID] = nodeIdToIndex.size();
 		}
 
-		edgeStrings.sort(compareEdgeListEntries);
+		edgeStrings.sort(compareEntries);
 
 		for (const auto &edgeString : edgeStrings)
 		{

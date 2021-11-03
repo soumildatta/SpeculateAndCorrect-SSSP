@@ -49,15 +49,15 @@ void *Testing(void *threadid) {
    pthread_exit(NULL);
 }
 
-tGraph processGraph(path &filename)
-{
-	cout << "Processing Graph" << endl;
-
-	tEdgeList DIMACSEdgeList;
-	DIMACSEdgeList.parseDimacs(filename.c_str());
-
-	tGraph graph;
-	graph.convertEdgeList(DIMACSEdgeList);
-
-	return graph;
-}
+//tGraph processGraph(path &filename)
+//{
+//	cout << "Processing Graph" << endl;
+//
+//	tEdgeList DIMACSEdgeList;
+//	DIMACSEdgeList.parseDimacs(filename.c_str());
+//
+//	tGraph graph;
+//	graph.convertEdgeList(DIMACSEdgeList);
+//
+//	return graph;
+//}
