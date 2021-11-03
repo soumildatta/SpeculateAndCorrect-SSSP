@@ -9,6 +9,6 @@
 #include "tTimer.h"
 #include "tGraph.h"
 
-double bellmanFord(tGraph &graph, const uint32_t &sourceNode);
+double bellmanFord(tGraph &graph, const uint32_t &sourceNode, vector<nodeCost> &nodeCosts);
 
 #endif
