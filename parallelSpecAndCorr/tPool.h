@@ -10,9 +10,12 @@
 
 #include "UtilityFunctions.h"
 
+#include <vector>
+using std::vector;
+
 struct tPool {
 	// pool buffer
-	uint32_t *pool;
+	vector<uint32_t> pool;
 	tIndex removeIndex;
 	tIndex addIndex;
 	tIndex bufferSize;

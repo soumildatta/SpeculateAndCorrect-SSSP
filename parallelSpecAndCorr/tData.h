@@ -11,11 +11,17 @@
 #include "tPool.h"
 #include "tGraph.h"
 
-struct tData {
-	tCSRNode *nodes;
-	tCSREdge *edges;
+#include <vector>
+using std::vector;
 
-	nodeCost *solution;
+struct tData {
+//	tCSRNode *nodes;
+//	tCSREdge *edges;
+
+	vector<tCSRNode> nodes;
+	vector<tCSREdge> edges;
+
+	vector<nodeCost> solution;
 
 	tPool speculationPool;
 	tPool correctionPool;
