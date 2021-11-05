@@ -15,14 +15,14 @@ using std::printf;
 // Define max threads for device
 #define maxThreads thread::hardware_concurrency()
 
-tGraph processGraph(const path &filename);
+tGraph processGraph(path &filename);
 
 void *Testing(void *threadid);
 
 int main(int argc, char *argv[])
 {
 	// TODO: add source node and num threads to argument list
-	if(argc != 4)
+	if(argc != 5)
 	{
 		cout << "Invalid arguments. Argument list expected: <filename> <verifyFilename> <iterations>" << endl;
 		exit(-1);
@@ -38,22 +38,23 @@ int main(int argc, char *argv[])
 	// Testing threads
 	pthread_t threads[maxThreads];
 
-	// Process graph
-	tGraph graph { processGraph(filename) };
-
 	// Struct to be passed as argument list
 	struct tData *data = (struct tData *)malloc(sizeof(struct tData));
 
-	// Initialize struct
+	// Process graph
+	tGraph graph { processGraph(filename) };
+
+	// Initialize argument struct
 	data->nodes = graph.nodes;
 	data->edges = graph.edges;
 
-	const nodeCost initialNodeCost(~0u, INT32_MAX);
-	vector<nodeCost> solution(graph.nNodes, initialNodeCost);
-	solution[sourceNode] =  nodeCost(sourceNode, 0);
+	// Initial costs are set to infinity. Source node is set to 0
+	const nodeCost initialCost(~0u, INT32_MAX);
+	vector<nodeCost> solution(graph.nNodes, initialCost);
+	solution[sourceNode] = nodeCost(sourceNode, 0);
 	data->solution = solution;
 
-	// Initialize speculation pool with source node cost initialized to 0
+	// Initialize speculation pool with source node is in the pool
 	vector<uint32_t> speculationPool(graph.nNodes, ~0u);
 	data->speculationPool.pool = speculationPool;
 	data->speculationPool.removeIndex = 0u;
@@ -67,32 +68,13 @@ int main(int argc, char *argv[])
 	data->correctionPool.addIndex = 0u;
 	data->correctionPool.bufferSize = correctionPool.size();
 
-	data->source = 0u;
-
-
-	// TODO: initialize data struct for arguments
-//	for(auto i { 0u }; i < maxThreads; ++i)
-//	{
-//		data[i].nodes = graph.nodes;
-//		data[i].edges = graph.edges;
-//
-//		const nodeCost initialCost(~0u, INT32_MAX);
-//		vector<nodeCost> solution(graph.nNodes, initialCost);
-//		data[i].solution = solution;
-//
-//		vector<uint32_t> speculationPool(graph.nEdges, ~0u);
-//		data[i].speculationPool = speculationPool;
-//
-//		vector<uint32_t> correctionPool(graph.nEdges, ~0u);
-//		data[i].correctionPool = correctionPool;
-//
-//		data[i].source = 0u;
-//	}
+	// Source node
+	data->source = sourceNode;
 
 	for(auto i { 0u }; i < maxThreads; ++i)
 	{
 		cout << "creating thread " << i << endl;
-		int check { pthread_create(&threads[i], NULL, Testing, (void *)i) };
+		int check { pthread_create(&threads[i], NULL, Testing, (void *)data) };
 		if(check)
 		{
 			cout << "Error" << endl;
@@ -107,18 +89,17 @@ int main(int argc, char *argv[])
 	}
 
 	pthread_exit(NULL);
-
+	free(data);
     return 0;
 }
 
-void *Testing(void *threadid) {
-   long tid;
-   tid = (long)threadid;
-//   printf("Exiting thread %lu\n", tid);
+void *Testing(void *data)
+{
+   cout << ((struct tData*)data)->source << endl;
    pthread_exit(NULL);
 }
 
-tGraph processGraph(const path &filename)
+tGraph processGraph(path &filename)
 {
 	cout << "Processing Graph" << endl;
 
