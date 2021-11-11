@@ -17,7 +17,7 @@ using std::printf;
 
 tGraph processGraph(path &filename);
 
-void *Testing(void *threadid);
+void *specAndCorr(void *threadid);
 
 int main(int argc, char *argv[])
 {
@@ -37,6 +37,10 @@ int main(int argc, char *argv[])
 
 	// Testing threads
 	pthread_t threads[maxThreads];
+
+
+	// How does this not work?
+//	tGraph graph { processGraph(filename) };
 
 	// Struct to be passed as argument list
 	struct tData *data = (struct tData *)malloc(sizeof(struct tData));
@@ -74,7 +78,7 @@ int main(int argc, char *argv[])
 	for(auto i { 0u }; i < maxThreads; ++i)
 	{
 		cout << "creating thread " << i << endl;
-		int check { pthread_create(&threads[i], NULL, Testing, (void *)data) };
+		int check { pthread_create(&threads[i], NULL, specAndCorr, (void *)data) };
 		if(check)
 		{
 			cout << "Error" << endl;
@@ -93,9 +97,18 @@ int main(int argc, char *argv[])
     return 0;
 }
 
-void *Testing(void *data)
+void *specAndCorr(void *data)
 {
    cout << ((struct tData*)data)->source << endl;
+
+   // TODO: Remove from pool
+
+   // TODO: Check thread slot for task
+
+   // TODO: Perform relaxations
+
+
+
    pthread_exit(NULL);
 }
 
