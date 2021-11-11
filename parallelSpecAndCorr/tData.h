@@ -15,9 +15,6 @@
 using std::vector;
 
 struct tData {
-//	tCSRNode *nodes;
-//	tCSREdge *edges;
-
 	vector<tCSRNode> nodes;
 	vector<tCSREdge> edges;
 

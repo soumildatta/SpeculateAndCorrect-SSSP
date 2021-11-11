@@ -5,9 +5,11 @@
 #include "tData.h"
 #include "tPool.h"
 
-#include <pthread.h>
 #include <thread>
 using std::thread;
+
+#include <functional>
+using std::ref;
 
 #include <cstdio>
 using std::printf;
@@ -17,7 +19,7 @@ using std::printf;
 
 tGraph processGraph(path &filename);
 
-void *specAndCorr(void *threadid);
+void *specAndCorr(tData &data);
 
 int main(int argc, char *argv[])
 {
@@ -34,13 +36,6 @@ int main(int argc, char *argv[])
 	int sourceNode { atoi(argv[4]) };
 
 	cout << "Max threads supported by this system: " << maxThreads << endl;
-
-	// Testing threads
-	pthread_t threads[maxThreads];
-
-
-	// How does this not work?
-//	tGraph graph { processGraph(filename) };
 
 	// Struct to be passed as argument list
 	struct tData *data = (struct tData *)malloc(sizeof(struct tData));
@@ -75,11 +70,14 @@ int main(int argc, char *argv[])
 	// Source node
 	data->source = sourceNode;
 
+	// Threads
+	thread *threads[maxThreads];
+
 	for(auto i { 0u }; i < maxThreads; ++i)
 	{
 		cout << "creating thread " << i << endl;
-		int check { pthread_create(&threads[i], NULL, specAndCorr, (void *)data) };
-		if(check)
+		threads[i] = new thread(specAndCorr, ref(*data));
+		if(threads[i] == nullptr)
 		{
 			cout << "Error" << endl;
 			exit(-1);
@@ -89,7 +87,7 @@ int main(int argc, char *argv[])
 	for(auto i { 0u }; i < maxThreads; ++i)
 	{
 		cout << "joining thread " << i << endl;
-		pthread_join(threads[i], (void **)~0u);
+		threads[i]->join();
 	}
 
 	pthread_exit(NULL);
@@ -97,17 +95,16 @@ int main(int argc, char *argv[])
     return 0;
 }
 
-void *specAndCorr(void *data)
+//void *specAndCorr(void *data)
+void *specAndCorr(tData &data)
 {
-   cout << ((struct tData*)data)->source << endl;
+   cout << data.source << endl;
 
    // TODO: Remove from pool
 
    // TODO: Check thread slot for task
 
    // TODO: Perform relaxations
-
-
 
    pthread_exit(NULL);
 }
@@ -118,6 +115,8 @@ tGraph processGraph(path &filename)
 
 	tEdgeList DIMACSEdgeList;
 	DIMACSEdgeList.importDIMACSEdgeList(filename.c_str());
+
+	cout << HERE << endl;
 
 	tGraph graph;
 	graph.convertEdgeList(DIMACSEdgeList);
