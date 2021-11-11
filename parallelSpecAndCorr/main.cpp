@@ -98,15 +98,28 @@ int main(int argc, char *argv[])
 //void *specAndCorr(void *data)
 void *specAndCorr(tData &data)
 {
+   bool threadNeedsWork { true };
+
    cout << data.source << endl;
 
-   // TODO: Remove from pool
+   int item = 0;
+   while(threadNeedsWork)
+   {
+	   cout << item << endl;
+	   item++;
+	   if(item == 5) threadNeedsWork = false;
 
-   // TODO: Check thread slot for task
+	   // TODO: Remove from pool
+	   if()
 
-   // TODO: Perform relaxations
+	   // TODO: Check thread slot for task
 
-   pthread_exit(NULL);
+	   // TODO: Perform relaxations
+
+	   // TODO: Add to correction or speculation pool accordingly
+   }
+
+   cout << "Thread has finished" << endl;
 }
 
 tGraph processGraph(path &filename)
