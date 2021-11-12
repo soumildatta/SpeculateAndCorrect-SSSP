@@ -10,8 +10,8 @@
 
 #include "UtilityFunctions.h"
 
-#include <vector>
-using std::vector;
+#include <list>
+using std::list;
 
 struct tPool {
 	// pool buffer

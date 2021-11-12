@@ -14,6 +14,9 @@ using std::ref;
 #include <cstdio>
 using std::printf;
 
+#include <list>
+using std::list;
+
 // Define max threads for device
 #define maxThreads thread::hardware_concurrency()
 
@@ -54,21 +57,31 @@ int main(int argc, char *argv[])
 	data->solution = solution;
 
 	// Initialize speculation pool with source node is in the pool
-	vector<uint32_t> speculationPool(graph.nNodes, ~0u);
+	//	vector<uint32_t> speculationPool(graph.nNodes);
+	vector<uint32_t> speculationPool;
+	speculationPool.emplace_back(sourceNode);
 	data->speculationPool.pool = speculationPool;
 	data->speculationPool.removeIndex = 0u;
 	data->speculationPool.addIndex = 1u;
-	data->speculationPool.bufferSize = speculationPool.size();
+	data->speculationPool.bufferSize = graph.nNodes;
+
+//	cout << data->speculationPool.pool[0] << endl;
+//
+//	cout << HERE << endl;
 
 	// Initialize correction pool that is empty
-	vector<uint32_t> correctionPool(graph.nNodes, ~0u);
+	//	vector<uint32_t> correctionPool(graph.nNodes);
+	vector<uint32_t> correctionPool;
 	data->correctionPool.pool = correctionPool;
 	data->correctionPool.removeIndex = 0u;
 	data->correctionPool.addIndex = 0u;
-	data->correctionPool.bufferSize = correctionPool.size();
+	data->correctionPool.bufferSize = graph.nNodes;
 
 	// Source node
 	data->source = sourceNode;
+
+	// Updates an index for each thread
+	data->threadTrackIndex = 0u;
 
 	// Threads
 	thread *threads[maxThreads];
@@ -99,25 +112,32 @@ int main(int argc, char *argv[])
 void *specAndCorr(tData &data)
 {
    bool threadNeedsWork { true };
+   uint32_t threadRelativeIndex;
 
-   cout << data.source << endl;
+   cout << data.speculationPool.pool[0] << endl;
 
-   int item = 0;
-   while(threadNeedsWork)
-   {
-	   cout << item << endl;
-	   item++;
-	   if(item == 5) threadNeedsWork = false;
-
-	   // TODO: Remove from pool
-	   if()
-
-	   // TODO: Check thread slot for task
-
-	   // TODO: Perform relaxations
-
-	   // TODO: Add to correction or speculation pool accordingly
-   }
+//   int item = 0;
+//   while(threadNeedsWork)
+//   {
+//	   cout << item << endl;
+//	   item++;
+//	   if(item == 5) threadNeedsWork = false;
+//
+//	   // TODO: Remove from pool
+//	   threadRelativeIndex = data.threadTrackIndex;
+//	   data.threadTrackIndex += 1u;
+//
+//	   // mutex lock
+//
+//
+////	   if(data.correctionPool.pool[])
+//
+//	   // TODO: Check thread slot for task
+//
+//	   // TODO: Perform relaxations
+//
+//	   // TODO: Add to correction or speculation pool accordingly
+//   }
 
    cout << "Thread has finished" << endl;
 }
@@ -128,8 +148,6 @@ tGraph processGraph(path &filename)
 
 	tEdgeList DIMACSEdgeList;
 	DIMACSEdgeList.importDIMACSEdgeList(filename.c_str());
-
-	cout << HERE << endl;
 
 	tGraph graph;
 	graph.convertEdgeList(DIMACSEdgeList);

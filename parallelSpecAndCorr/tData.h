@@ -24,8 +24,9 @@ struct tData {
 	tPool correctionPool;
 
 	uint32_t source;
+	uint32_t threadTrackIndex;
 
-#define tDataMemberList nodes, edges, solution, speculationPool, correctionPool, source
+#define tDataMemberList nodes, edges, solution, speculationPool, correctionPool, source, threadTrackIndex
 };
 
 #endif /* TDATA_H */
