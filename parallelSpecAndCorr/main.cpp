@@ -151,6 +151,21 @@ void *specAndCorr(tData &data)
 		   }
 	   }
 
+	   const auto &proximalNode { data.nodes[proximalNodeIndex] };
+
+	   for(auto edgeIndex { 0u }; edgeIndex < proximalNode.nEdges; ++edgeIndex)
+	   {
+		   const auto &edge { data.edges[proximalNode.startEdgeIdx + edgeIndex] };
+		   const auto &distalNodeIndex { edge.distalNodeIdx };
+		   const auto &weight { edge.weight };
+
+		   nodeCost proposedParentNodeCost(proximalNodeIndex, data.solution[proximalNodeIndex].cost + weight);
+
+		   if(data.solution[proximalNodeIndex].cost != INT32_MAX)
+		   {
+
+		   }
+	   }
 
 //	   if(data.correctionPool.pool[])
 
