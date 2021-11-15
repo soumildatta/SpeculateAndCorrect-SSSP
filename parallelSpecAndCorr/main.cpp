@@ -17,12 +17,18 @@ using std::printf;
 #include <list>
 using std::list;
 
+#include <mutex>
+using std::mutex;
+using std::lock_guard;
+
 // Define max threads for device
 #define maxThreads thread::hardware_concurrency()
 
 tGraph processGraph(path &filename);
 
 void *specAndCorr(tData &data);
+
+mutex g_mutex;
 
 int main(int argc, char *argv[])
 {
@@ -112,32 +118,48 @@ int main(int argc, char *argv[])
 void *specAndCorr(tData &data)
 {
    bool threadNeedsWork { true };
+
    uint32_t threadRelativeIndex;
 
    cout << data.speculationPool.pool[0] << endl;
 
-//   int item = 0;
-//   while(threadNeedsWork)
-//   {
-//	   cout << item << endl;
-//	   item++;
-//	   if(item == 5) threadNeedsWork = false;
-//
-//	   // TODO: Remove from pool
+   int item = 0;
+   while(threadNeedsWork && (data.speculationPool.pool.size() || data.correctionPool.pool.size()))
+   {
+	   uint32_t proximalNodeIndex;
+
+	   cout << item << endl;
+	   item++;
+	   if(item == 5) threadNeedsWork = false;
+
+	   // TODO: Remove from pool
 //	   threadRelativeIndex = data.threadTrackIndex;
 //	   data.threadTrackIndex += 1u;
-//
-//	   // mutex lock
-//
-//
-////	   if(data.correctionPool.pool[])
-//
-//	   // TODO: Check thread slot for task
-//
-//	   // TODO: Perform relaxations
-//
-//	   // TODO: Add to correction or speculation pool accordingly
-//   }
+
+	   // Lock is released when out of scope
+	   {
+		   const lock_guard<mutex> lock(g_mutex);
+		   if(data.correctionPool.pool.size())
+		   {
+			   proximalNodeIndex = data.correctionPool.pool.back();
+			   data.correctionPool.pool.pop_back();
+		   }
+		   else
+		   {
+			   proximalNodeIndex = data.speculationPool.pool.back();
+			   data.speculationPool.pool.pop_back();
+		   }
+	   }
+
+
+//	   if(data.correctionPool.pool[])
+
+	   // TODO: Check thread slot for task
+
+	   // TODO: Perform relaxations
+
+	   // TODO: Add to correction or speculation pool accordingly
+   }
 
    cout << "Thread has finished" << endl;
 }
