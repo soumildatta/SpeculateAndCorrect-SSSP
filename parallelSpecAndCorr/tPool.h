@@ -10,14 +10,14 @@
 
 #include "UtilityFunctions.h"
 
-#include <list>
-using std::list;
+#include <atomic>
+using std::atomic_uint64_t;
 
 struct tPool {
 	// pool buffer
-	vector<uint32_t> pool;
-	tIndex removeIndex;
-	tIndex addIndex;
+	vector<atomic_uint64_t> pool;
+	atomic_uint64_t removeIndex;
+	atomic_uint64_t addIndex;
 	tIndex bufferSize;
 
 #define tPoolMemberList pool, removeIndex, addIndex, bufferSize

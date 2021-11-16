@@ -14,6 +14,10 @@
 #include <vector>
 using std::vector;
 
+#include <atomic>
+using std::atomic_bool;
+using std::atomic_uint64_t;
+
 struct tData {
 	vector<tCSRNode> nodes;
 	vector<tCSREdge> edges;
@@ -23,10 +27,13 @@ struct tData {
 	tPool speculationPool;
 	tPool correctionPool;
 
+	atomic_uint64_t nIncompleteTasks;
 	uint32_t source;
 	uint32_t threadTrackIndex;
 
-#define tDataMemberList nodes, edges, solution, speculationPool, correctionPool, source, threadTrackIndex
+	atomic_bool abortFlag;
+
+#define tDataMemberList nodes, edges, solution, speculationPool, correctionPool, nIncompleteTasks, source, threadTrackIndex, abortFlag
 };
 
 #endif /* TDATA_H */

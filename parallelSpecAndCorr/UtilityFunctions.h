@@ -69,7 +69,7 @@ using std::vector;
 #include "ForEach.h"
 
 typedef int32_t tWeight;
-typedef unsigned long long tIndex;
+typedef uint64_t tIndex;
 typedef unsigned long long tPerfCounter;
 
 // Default locale.
