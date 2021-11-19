@@ -5,6 +5,7 @@
 #include "tData.h"
 #include "tPool.h"
 #include "UtilityFunctions.h"
+#include "validation.h"
 
 #include <thread>
 using std::thread;
@@ -32,7 +33,7 @@ using std::memory_order_relaxed;
 #define makeAtomicUint64(var) (*(atomic_uint64_t *) &var)
 
 // Define max threads for device
-#define maxThreads thread::hardware_concurrency()
+#define maxThreads 1
 
 
 tGraph processGraph(path &filename);
@@ -75,7 +76,7 @@ int main(int argc, char *argv[])
 
 	// Initialize speculation pool with source node is in the pool
 	//	vector<uint32_t> speculationPool(graph.nNodes);
-	vector<uint64_t> speculationPool;
+	vector<uint64_t> speculationPool(graph.nNodes, TNA());
 	speculationPool.emplace_back(makeAtomicUint64(sourceNode));
 	data->speculationPool.pool = speculationPool;
 	data->speculationPool.removeIndex = 0u;
@@ -88,7 +89,7 @@ int main(int argc, char *argv[])
 
 	// Initialize correction pool that is empty
 	//	vector<uint32_t> correctionPool(graph.nNodes);
-	vector<uint64_t> correctionPool;
+	vector<uint64_t> correctionPool(graph.nNodes, TNA());
 	data->correctionPool.pool = correctionPool;
 	data->correctionPool.removeIndex = 0u;
 	data->correctionPool.addIndex = 0u;
@@ -123,7 +124,18 @@ int main(int argc, char *argv[])
 		threads[i]->join();
 	}
 
+
+	if(readSolution(verifyFilename, data->solution))
+	{
+		cout << "o";
+	}
+	else
+	{
+		cout << "x";
+	}
+
 	pthread_exit(NULL);
+
 	free(data);
     return 0;
 }
@@ -157,7 +169,8 @@ void specAndCorr(tData &data)
 
 	   myTaskToken = toAtomic(&data.correctionPool.pool[corrRemoveSlot])->exchange(TNA(), memory_order_acq_rel);
 
-	   if(myTaskToken != TNA())
+//	   if(myTaskToken != TNA())
+	   if(myTaskToken == TNA())
 	   {
 		   myTaskToken = toAtomic(&data.speculationPool.pool[specRemoveSlot])->exchange(TNA(), memory_order_acq_rel);
 	   }
@@ -166,6 +179,8 @@ void specAndCorr(tData &data)
 	   {
 		   // Task Prologue
 		   proximalNodeIndex = myTaskToken;
+
+		   // TODO: CHeck for negative cycles
 
 		   for(auto edgeIndex { 0u }; edgeIndex < data.nodes[proximalNodeIndex].nEdges; ++edgeIndex)
 		   {
@@ -203,6 +218,7 @@ void specAndCorr(tData &data)
 						   if(value != TNA())
 						   {
 							   toAtomic(&data.abortFlag)->store(true, memory_order_release);
+							   throw("Error Correction");
 							   return;
 						   }
 					   }
@@ -214,6 +230,7 @@ void specAndCorr(tData &data)
 					   if(value != TNA())
 					   {
 						   toAtomic(&data.abortFlag)->store(true, memory_order_release);
+						   throw("Error Speculation");
 						   return;
 					   }
 				   }
