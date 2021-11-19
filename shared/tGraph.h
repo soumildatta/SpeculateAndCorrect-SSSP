@@ -13,6 +13,9 @@ using std::endl;
 #include <stdlib.h>
 #include <cstdint>
 
+#include <atomic>
+using std::atomic;
+
 #include "tEdgeList.h"
 
 struct nodeCost
@@ -23,6 +26,9 @@ struct nodeCost
 	nodeCost(void) : proximalNodeIndex(~0u), cost(INT32_MAX) { return; }
 	nodeCost(uint32_t _proximalNodeIndex, int32_t _cost) : proximalNodeIndex(_proximalNodeIndex), cost(_cost) { return; }
 	~nodeCost() { return; }
+
+	inline atomic<uint64_t> *toAtomic(void) { return (atomic<uint64_t> *) &proximalNodeIndex; }
+	inline uint64_t &toUint64(void) { return *((uint64_t *) &proximalNodeIndex); }
 };
 
 // CSR Representation
