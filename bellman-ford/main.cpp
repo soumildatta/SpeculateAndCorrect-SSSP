@@ -3,6 +3,7 @@
 #include "tEdgeList.h"
 #include "tTimer.h"
 #include "validation.h"
+#include "performanceMetrics.h"
 
 tGraph processGraph(path &filename);
 
@@ -11,10 +12,12 @@ int main(int argc, char *argv[])
 	// Temporary cmd args parse
 	// TODO: cmd getopt config file
 	path filename { argv[1] };
-	path verifyFile { argv[3] };
-	tGraph graph { processGraph(filename) };
+	path verifyFile { argv[2] };
+	int iterations { atoi(argv[3]) };
 
-	int iterations { atoi(argv[2]) };
+	tGraph graph { processGraph(filename) };
+	performanceMetrics performance;
+
 	double totalTime { 0 };
 
     cout << "Performing Standard Bellman-Ford" << endl;
@@ -22,7 +25,7 @@ int main(int argc, char *argv[])
 	for(auto i { 0 }; i < iterations; ++i)
 	{
 		vector<nodeCost> nodeCosts;
-		auto time { bellmanFord(graph, 0u, nodeCosts) };
+		auto time { bellmanFord(graph, 0u, nodeCosts, performance) };
 
 		// Checking solution
 		if(readSolution(verifyFile, nodeCosts))
@@ -36,7 +39,6 @@ int main(int argc, char *argv[])
 			cout.flush();
 		}
 
-//		cout << time << endl;
 		totalTime += time;
 	}
 
