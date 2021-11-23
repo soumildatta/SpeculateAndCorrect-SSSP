@@ -10,7 +10,6 @@ tGraph processGraph(path &filename);
 int main(int argc, char *argv[])
 {
 	// Temporary cmd args parse
-	// TODO: cmd getopt config file
 	path filename { argv[1] };
 	path verifyFile { argv[2] };
 	int iterations { atoi(argv[3]) };
@@ -44,6 +43,8 @@ int main(int argc, char *argv[])
 
 	cout << "\nTotal time for " << iterations << " iterations: " << totalTime << endl;
 	cout << "Average time for each iteration: " << totalTime/iterations << endl;
+	cout << "Performance Metrics: " << endl;
+	performance.printMetrics();
 
     return 0;
 }
