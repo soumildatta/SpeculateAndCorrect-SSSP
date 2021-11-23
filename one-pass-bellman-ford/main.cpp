@@ -8,11 +8,15 @@ tGraph processGraph(const path &filename);
 
 int main(int argc, char *argv[])
 {
+	if(argc != 4) throw("Invalid arguments. Expected argument list: <filename> <verifyFilename> <iterations>");
 	path filename { argv[1] };
 	path verifyFile { argv[2] };
+	int iterations { atoi(argv[3]) };
+
+
 	tGraph graph { processGraph(filename) };
 
-	int iterations { atoi(argv[3]) };
+
 	double totalTime { 0 };
 
 	cout << "Performing Optimized Bellman Ford" << endl;

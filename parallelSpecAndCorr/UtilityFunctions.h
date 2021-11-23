@@ -66,10 +66,13 @@ using std::pair;
 #include <vector>
 using std::vector;
 
+#include <atomic>
+using std::atomic;
+
 #include "ForEach.h"
 
 typedef int32_t tWeight;
-typedef unsigned long long tIndex;
+typedef uint64_t tIndex;
 typedef unsigned long long tPerfCounter;
 
 // Default locale.
@@ -107,6 +110,12 @@ inline string Format(const string format, ...)
     // Return resulting string.
     return string(Buffer.data());
 }
+
+template<class T>
+inline atomic<T> *toAtomic(T *var) { return (atomic<T> *) var; }
+
+//template<class T>
+//inline atomic<T> *toAtomic(T &var) { return (atomic<T> *) &var; }
 
 inline string replace_all(const string &inString, const string &what, const string &with)
 {

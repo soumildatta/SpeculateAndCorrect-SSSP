@@ -133,54 +133,54 @@ inline path Canonical(const path &filePath)
     }
 }
 
-//// Handy == operator on vectors.
-//template<class T>
-//inline bool operator==(const vector<T> &lhs, const vector<T> &rhs)
-//{
-//    return (lhs.size()*sizeof(T) == rhs.size()*sizeof(T)) ? memcmp(lhs.data(), rhs.data(), sizeof(T) * lhs.size()) == 0 : false;
-//}
-//
-//template<class T>
-//inline bool operator!=(const vector<T> &lhs, const vector<T> &rhs)
-//{
-//    return !(lhs == rhs);
-//}
-//
-//template<class T1, class T2>
-//inline bool operator==(const vector<T1> &lhs, const vector<T2> &rhs)
-//{
-//    return (lhs.size()*sizeof(T1) == rhs.size()*sizeof(T2)) ? memcmp(lhs.data(), rhs.data(), sizeof(T1) * lhs.size()) == 0 : false;
-//}
-//
-//template<class T1, class T2>
-//inline bool operator!=(const vector<T1> &lhs, const vector<T2> &rhs)
-//{
-//    return !(lhs == rhs);
-//}
-//
-//template<class T>
-//inline bool operator ==(const vector<T> &lhs, const T *rhs)
-//{
-//    return memcmp(lhs.data(), rhs, sizeof(T) * lhs.size()) == 0;
-//}
-//
-//template<class T>
-//inline bool operator!=(const vector<T> &lhs, const T *rhs)
-//{
-//    return !(lhs == rhs);
-//}
-//
-//// Handy vector initializer
-//template<class T>
-//inline void initializeVector(vector<T> &vec, const T &&value)
-//{
-//	for (auto &entry : vec)
-//	{
-//		entry = value;
-//	}
-//
-//	return;
-//}
+// Handy == operator on vectors.
+template<class T>
+inline bool operator==(const vector<T> &lhs, const vector<T> &rhs)
+{
+    return (lhs.size()*sizeof(T) == rhs.size()*sizeof(T)) ? memcmp(lhs.data(), rhs.data(), sizeof(T) * lhs.size()) == 0 : false;
+}
+
+template<class T>
+inline bool operator!=(const vector<T> &lhs, const vector<T> &rhs)
+{
+    return !(lhs == rhs);
+}
+
+template<class T1, class T2>
+inline bool operator==(const vector<T1> &lhs, const vector<T2> &rhs)
+{
+    return (lhs.size()*sizeof(T1) == rhs.size()*sizeof(T2)) ? memcmp(lhs.data(), rhs.data(), sizeof(T1) * lhs.size()) == 0 : false;
+}
+
+template<class T1, class T2>
+inline bool operator!=(const vector<T1> &lhs, const vector<T2> &rhs)
+{
+    return !(lhs == rhs);
+}
+
+template<class T>
+inline bool operator ==(const vector<T> &lhs, const T *rhs)
+{
+    return memcmp(lhs.data(), rhs, sizeof(T) * lhs.size()) == 0;
+}
+
+template<class T>
+inline bool operator!=(const vector<T> &lhs, const T *rhs)
+{
+    return !(lhs == rhs);
+}
+
+// Handy vector initializer
+template<class T>
+inline void initializeVector(vector<T> &vec, const T &&value)
+{
+	for (auto &entry : vec)
+	{
+		entry = value;
+	}
+
+	return;
+}
 
 // Handy vector reduction functions.
 template<class T>

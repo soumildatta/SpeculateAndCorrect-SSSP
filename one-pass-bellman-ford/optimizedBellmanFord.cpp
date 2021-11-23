@@ -14,12 +14,19 @@ double optimizedBellmanFord(tGraph &graph, const uint32_t &sourceNode, vector<no
 	nodeCosts.resize(nNodes, nodeCost());
 	nodeCosts[sourceNode] = nodeCost(sourceNode, 0);
 
+	vector<uint32_t> visitCounts(nNodes, 0u);
+
 	while(speculation.size() || correction.size())
 	{
 		// Prioritize checking correction buffer
 		auto currentNodeIndex { correction.size() ? correction.back() : speculation.back() };
 		correction.size() ? correction.pop_back() : speculation.pop_back();
 		auto &currentNode { nodes[currentNodeIndex] };
+
+		if(visitCounts[currentNodeIndex]++ >= nNodes)
+		{
+			throw("Negative Cycle");
+		}
 
 		for(auto edgeIndex { 0u }; edgeIndex < currentNode.nEdges; ++edgeIndex)
 		{

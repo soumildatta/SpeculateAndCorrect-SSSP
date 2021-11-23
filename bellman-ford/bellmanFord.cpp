@@ -1,16 +1,6 @@
 #include "bellmanFord.h"
 
-//struct nodeCost
-//{
-//	uint32_t proximalNodeIndex;
-//	uint32_t cost;
-//
-//	nodeCost(void) : proximalNodeIndex(~0u), cost(INT32_MAX) { return; }
-//	nodeCost(uint32_t _proximalNodeIndex, int32_t _cost) : proximalNodeIndex(_proximalNodeIndex), cost(_cost) { return; }
-//	~nodeCost() { return; }
-//};
-
-double bellmanFord(tGraph &graph, const uint32_t &sourceNode, vector<nodeCost> &nodeCosts)
+double bellmanFord(tGraph &graph, const uint32_t &sourceNode, vector<nodeCost> &nodeCosts, performanceMetrics performance)
 {
     tTimer timer;
 
@@ -38,8 +28,11 @@ double bellmanFord(tGraph &graph, const uint32_t &sourceNode, vector<nodeCost> &
     			auto &weight { currentEdge.weight };
     			auto &proxmialNodeCost { nodeCosts[proximalNodeIdx].cost };
 
+    			++performance.attemptedRelaxations;
+
     			if (proximalNodeIdx != INT32_MAX)
     			{
+    				++performance.nodesVisited;
     				nodeCost proposedCost(proximalNodeIdx, weight + proxmialNodeCost);
 
     				// Relaxation
@@ -48,14 +41,23 @@ double bellmanFord(tGraph &graph, const uint32_t &sourceNode, vector<nodeCost> &
     					nodeCosts[distalNodeIdx] = proposedCost;
     					// Performed relaxation so do next pass
     					complete = false;
+
+    					++performance.numRelaxations;
     				}
     				else
     				{
     					if((proposedCost.cost == nodeCosts[distalNodeIdx].cost) && (proposedCost.proximalNodeIndex < nodeCosts[distalNodeIdx].proximalNodeIndex))
     					{
     						nodeCosts[distalNodeIdx] = proposedCost;
+    						++performance.numBetterParentsFound;
     					}
+
+    					++performance.numOptimalPathsAttempted;
     				}
+    			}
+    			else
+    			{
+    				++performance.numCannotRelax;
     			}
     		}
     	}
