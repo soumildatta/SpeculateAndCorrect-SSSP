@@ -3,6 +3,7 @@
 #include "tEdgeList.h"
 #include "tTimer.h"
 #include "validation.h"
+#include "performanceMetrics.h"
 
 tGraph processGraph(const path &filename);
 
@@ -13,9 +14,8 @@ int main(int argc, char *argv[])
 	path verifyFile { argv[2] };
 	int iterations { atoi(argv[3]) };
 
-
 	tGraph graph { processGraph(filename) };
-
+	performanceMetrics performance;
 
 	double totalTime { 0 };
 
@@ -24,7 +24,7 @@ int main(int argc, char *argv[])
 	for(auto i { 0 }; i < iterations; ++i)
 	{
 		vector<nodeCost> nodeCosts;
-		auto time { optimizedBellmanFord(graph, 0u, nodeCosts) };
+		auto time { optimizedBellmanFord(graph, 0u, nodeCosts, performance) };
 
 		// Checking solution
 		if(readSolution(verifyFile, nodeCosts))

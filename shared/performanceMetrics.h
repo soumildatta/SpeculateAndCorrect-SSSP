@@ -9,15 +9,18 @@
 #define PERFORMANCEMETRICS_H
 
 #include <stdlib.h>
+#include "UtilityFunctions.h"
 
 struct performanceMetrics {
-	uint32_t attemptedRelaxations = 0u;
-	uint32_t nodesVisited;
-	uint32_t numRelaxations;
-	uint32_t numBetterParentsFound;
-	uint32_t numOptimalPathsAttempted;
-	uint32_t numCannotRelax;
-	uint32_t numPasses;
+	tPerfCounter attemptedRelaxations;
+	tPerfCounter nodesVisited;
+	tPerfCounter numRelaxations;
+	tPerfCounter numBetterParentsFound;
+	tPerfCounter numOptimalPathsAttempted;
+	tPerfCounter numCannotRelax;
+	tPerfCounter numPasses;
+	tPerfCounter numCorrections;
+	tPerfCounter numSpeculations;
 
 	inline void printMetrics()
 	{
