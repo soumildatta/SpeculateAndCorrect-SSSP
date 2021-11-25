@@ -3,7 +3,7 @@
 #include "tEdgeList.h"
 #include "tTimer.h"
 #include "validation.h"
-#include "performanceMetrics.h"
+#include "tSSSPPerformanceCounters.h"
 
 tGraph processGraph(path &filename);
 
@@ -15,7 +15,7 @@ int main(int argc, char *argv[])
 	int iterations { atoi(argv[3]) };
 
 	tGraph graph { processGraph(filename) };
-	performanceMetrics performance;
+	tSSSPPerformanceCounters performance;
 
 	double totalTime { 0 };
 
@@ -23,6 +23,8 @@ int main(int argc, char *argv[])
 
 	for(auto i { 0 }; i < iterations; ++i)
 	{
+		performance.clear();
+
 		vector<nodeCost> nodeCosts;
 		auto time { bellmanFord(graph, 0u, nodeCosts, performance) };
 
@@ -42,9 +44,8 @@ int main(int argc, char *argv[])
 	}
 
 	cout << "\nTotal time for " << iterations << " iterations: " << totalTime << endl;
-	cout << "Average time for each iteration: " << totalTime/iterations << endl;
-	cout << "Performance Metrics: " << endl;
-	performance.printMetrics();
+	cout << "Average time for each iteration: " << totalTime/iterations << endl << endl;
+	cout << performance << endl;
 
     return 0;
 }

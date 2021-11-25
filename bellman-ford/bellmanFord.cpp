@@ -1,6 +1,6 @@
 #include "bellmanFord.h"
 
-double bellmanFord(tGraph &graph, const uint32_t &sourceNode, vector<nodeCost> &nodeCosts, performanceMetrics performance)
+double bellmanFord(tGraph &graph, const uint32_t &sourceNode, vector<nodeCost> &nodeCosts, tSSSPPerformanceCounters &performance)
 {
     tTimer timer;
 
@@ -16,6 +16,7 @@ double bellmanFord(tGraph &graph, const uint32_t &sourceNode, vector<nodeCost> &
     for (auto iteration { 0u }; (iteration < nNodes - 1u) && !complete; ++iteration)
     {
     	complete = true;
+    	tSSSPPerformanceCounters passPerformanceCounter;
 
     	for (auto proximalNodeIdx { 0u }; proximalNodeIdx < nNodes; ++proximalNodeIdx)
     	{
@@ -28,11 +29,11 @@ double bellmanFord(tGraph &graph, const uint32_t &sourceNode, vector<nodeCost> &
     			auto &weight { currentEdge.weight };
     			auto &proxmialNodeCost { nodeCosts[proximalNodeIdx].cost };
 
-    			++performance.attemptedRelaxations;
+    			++passPerformanceCounter.nRelaxationAttempts;
 
     			if (proximalNodeIdx != INT32_MAX)
     			{
-    				++performance.nodesVisited;
+    				++passPerformanceCounter.nNodesVisited;
     				nodeCost proposedCost(proximalNodeIdx, weight + proxmialNodeCost);
 
     				// Relaxation
@@ -42,25 +43,28 @@ double bellmanFord(tGraph &graph, const uint32_t &sourceNode, vector<nodeCost> &
     					// Performed relaxation so do next pass
     					complete = false;
 
-    					++performance.numRelaxations;
+    					++passPerformanceCounter.nRelaxations;
     				}
     				else
     				{
     					if((proposedCost.cost == nodeCosts[distalNodeIdx].cost) && (proposedCost.proximalNodeIndex < nodeCosts[distalNodeIdx].proximalNodeIndex))
     					{
     						nodeCosts[distalNodeIdx] = proposedCost;
-    						++performance.numBetterParentsFound;
+    						++passPerformanceCounter.nBetterParentIndex;
     					}
 
-    					++performance.numOptimalPathsAttempted;
+    					++passPerformanceCounter.nAlreadyOptimal;
     				}
     			}
     			else
     			{
-    				++performance.numCannotRelax;
+    				++passPerformanceCounter.nCannotRelax;
     			}
     		}
     	}
+
+    	performance += passPerformanceCounter;
+    	++performance.nPasses;
     }
 
     return timer.getTime();
