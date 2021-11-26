@@ -35,7 +35,6 @@ using std::memory_order_relaxed;
 // Define max threads for device
 #define maxThreads 1
 
-
 tGraph processGraph(path &filename);
 
 void specAndCorr(tData &data);
@@ -54,7 +53,7 @@ int main(int argc, char *argv[])
 	path filename { argv[1] };
 	path verifyFilename { argv[2] };
 //	int iterations { atoi(argv[3]) };
-	int sourceNode { atoi(argv[4]) };
+	uint64_t sourceNode { (uint64_t) atoi(argv[4]) };
 
 	cout << "Max threads supported by this system: " << maxThreads << endl;
 
@@ -77,15 +76,12 @@ int main(int argc, char *argv[])
 	// Initialize speculation pool with source node is in the pool
 	//	vector<uint32_t> speculationPool(graph.nNodes);
 	vector<uint64_t> speculationPool(graph.nNodes, TNA());
-	speculationPool.emplace_back(makeAtomicUint64(sourceNode));
+	speculationPool[0u] = (makeAtomicUint64(sourceNode));
 	data->speculationPool.pool = speculationPool;
 	data->speculationPool.removeIndex = 0u;
 	data->speculationPool.addIndex = 1u;
 	data->speculationPool.bufferSize = graph.nNodes;
 
-//	cout << data->speculationPool.pool[0] << endl;
-//
-//	cout << HERE << endl;
 
 	// Initialize correction pool that is empty
 	//	vector<uint32_t> correctionPool(graph.nNodes);
@@ -124,6 +120,10 @@ int main(int argc, char *argv[])
 		threads[i]->join();
 	}
 
+//	for(auto &item : data->solution)
+//	{
+//		cout << item.proximalNodeIndex << " " << item.cost << endl;
+//	}
 
 	if(readSolution(verifyFilename, data->solution))
 	{
@@ -150,8 +150,10 @@ void specAndCorr(tData &data)
    bool specThreadNeedsWork { true };
    bool corrThreadNeedsWork { true };
 
-   while(toAtomic(&data.abortFlag)->load(memory_order_acquire) && toAtomic(&data.nIncompleteTasks)->load(memory_order_acquire))
+   while(!toAtomic(&data.abortFlag)->load(memory_order_acquire) && toAtomic(&data.nIncompleteTasks)->load(memory_order_acquire))
    {
+//	   cout << data.nIncompleteTasks << endl;
+
 	   // Ensure we have a slot to monitor for data arrival from each pool
 	   if(specThreadNeedsWork)
 	   {
@@ -167,16 +169,23 @@ void specAndCorr(tData &data)
 		   corrThreadNeedsWork = false;
 	   }
 
-	   myTaskToken = toAtomic(&data.correctionPool.pool[corrRemoveSlot])->exchange(TNA(), memory_order_acq_rel);
-
-//	   if(myTaskToken != TNA())
-	   if(myTaskToken == TNA())
+	   // TODO: Added if statement around correction remove
+	   if(data.correctionPool.pool[corrRemoveSlot] != TNA())
 	   {
-		   myTaskToken = toAtomic(&data.speculationPool.pool[specRemoveSlot])->exchange(TNA(), memory_order_acq_rel);
+		   myTaskToken = toAtomic(&data.correctionPool.pool[corrRemoveSlot])->exchange(TNA(), memory_order_acq_rel);
 	   }
 
 	   if(myTaskToken != TNA())
 	   {
+		   myTaskToken = toAtomic(&data.speculationPool.pool[specRemoveSlot])->exchange(TNA(), memory_order_acq_rel);
+	   }
+
+
+	   if(myTaskToken != TNA())
+	   {
+		   // TODO: WORKS HERE
+		   // libc++abi: terminating with uncaught exception of type char const*
+
 		   // Task Prologue
 		   proximalNodeIndex = myTaskToken;
 
@@ -198,8 +207,18 @@ void specAndCorr(tData &data)
 					   oldPathCost = data.solution[proximalNodeIndex];
 				   } while (!data.solution[proximalNodeIndex].toAtomic()->compare_exchange_strong(oldPathCost.toUint64(), proposedCost.toUint64(), memory_order_acq_rel, memory_order_relaxed));
 
+//				   if(oldPathCost.cost > proposedCost.cost)
+//				   {
+//					   cout << "Hello" << endl;
+//					   data.solution[distalNodeIndex].toAtomic()->store(proposedCost.toUint64(), memory_order_release);
+//				   }
+//				   else
+//				   {
+//					   cout << "Hello 2" << endl;
+//					   data.solution[distalNodeIndex].toAtomic()->store(proposedCost.toUint64(), memory_order_release);
+//				   }
+//break;
 				   // There are two cases on success - actual path cost change, or parent change.
-
 				   if(oldPathCost.cost > proposedCost.cost)
 				   {
 					   // Better path found. Note the change and queue the descendants
@@ -239,9 +258,11 @@ void specAndCorr(tData &data)
 			   {
 				   // This case should never happen for generational ordering
 				   throw("Cannot relax");
+				   toAtomic(&data.abortFlag)->store(true, memory_order_release);
 			   }
 		   }
 
+		   printf("sub");
 		   toAtomic(&data.nIncompleteTasks)->fetch_sub(1u, memory_order_release);
 
 	   }
