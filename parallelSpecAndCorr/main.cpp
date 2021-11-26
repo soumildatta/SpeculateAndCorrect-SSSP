@@ -30,10 +30,13 @@ using std::memory_order_acquire;
 using std::memory_order_acq_rel;
 using std::memory_order_relaxed;
 
+#include <algorithm>
+using std::min;
+
 #define makeAtomicUint64(var) (*(atomic_uint64_t *) &var)
 
 // Define max threads for device
-#define maxThreads 1
+#define maxThreads 24
 
 tGraph processGraph(path &filename);
 
@@ -76,7 +79,7 @@ int main(int argc, char *argv[])
 	// Initialize speculation pool with source node is in the pool
 	//	vector<uint32_t> speculationPool(graph.nNodes);
 	vector<uint64_t> speculationPool(graph.nNodes, TNA());
-	speculationPool[0u] = (makeAtomicUint64(sourceNode));
+	speculationPool[0u] = sourceNode;
 	data->speculationPool.pool = speculationPool;
 	data->speculationPool.removeIndex = 0u;
 	data->speculationPool.addIndex = 1u;
@@ -120,11 +123,7 @@ int main(int argc, char *argv[])
 		threads[i]->join();
 	}
 
-//	for(auto &item : data->solution)
-//	{
-//		cout << item.proximalNodeIndex << " " << item.cost << endl;
-//	}
-
+	cout << endl << "Solution: " << endl;
 	if(readSolution(verifyFilename, data->solution))
 	{
 		cout << "o";
@@ -145,6 +144,7 @@ void specAndCorr(tData &data)
 {
    tIndex specRemoveIndex, corrRemoveIndex;
    tIndex specRemoveSlot, corrRemoveSlot;
+
    tIndex myTaskToken;
    tIndex proximalNodeIndex;
    bool specThreadNeedsWork { true };
@@ -152,8 +152,6 @@ void specAndCorr(tData &data)
 
    while(!toAtomic(&data.abortFlag)->load(memory_order_acquire) && toAtomic(&data.nIncompleteTasks)->load(memory_order_acquire))
    {
-//	   cout << data.nIncompleteTasks << endl;
-
 	   // Ensure we have a slot to monitor for data arrival from each pool
 	   if(specThreadNeedsWork)
 	   {
@@ -169,103 +167,85 @@ void specAndCorr(tData &data)
 		   corrThreadNeedsWork = false;
 	   }
 
-	   // TODO: Added if statement around correction remove
-	   if(data.correctionPool.pool[corrRemoveSlot] != TNA())
-	   {
-		   myTaskToken = toAtomic(&data.correctionPool.pool[corrRemoveSlot])->exchange(TNA(), memory_order_acq_rel);
-	   }
+	   myTaskToken = toAtomic(&data.correctionPool.pool[corrRemoveSlot])->exchange(TNA(), memory_order_acq_rel);
 
 	   if(myTaskToken != TNA())
+	   {
+		   corrThreadNeedsWork = true;
+	   }
+	   else
 	   {
 		   myTaskToken = toAtomic(&data.speculationPool.pool[specRemoveSlot])->exchange(TNA(), memory_order_acq_rel);
+
+		   if(myTaskToken != TNA())
+		   {
+			   specThreadNeedsWork = true;
+		   }
+		   else
+		   {
+			   // No task available
+			   if(maxThreads > thread::hardware_concurrency())
+			   {
+				   std::this_thread::yield();
+			   }
+			   continue;
+		   }
 	   }
 
+	   // Task Prologue
+	   proximalNodeIndex = myTaskToken;
 
-	   if(myTaskToken != TNA())
+	   for(auto edgeIndex { 0u }; edgeIndex < data.nodes[proximalNodeIndex].nEdges; ++edgeIndex)
 	   {
-		   // TODO: WORKS HERE
-		   // libc++abi: terminating with uncaught exception of type char const*
+		   auto currentEdgeIndex { data.nodes[proximalNodeIndex].startEdgeIdx + edgeIndex };
+		   auto distalNodeIndex { data.edges[currentEdgeIndex].distalNodeIdx };
 
-		   // Task Prologue
-		   proximalNodeIndex = myTaskToken;
+		   // Relaxations
+		   nodeCost proposedCost(proximalNodeIndex, data.solution[proximalNodeIndex].cost + data.edges[currentEdgeIndex].weight);
 
-		   // TODO: CHeck for negative cycles
-
-		   for(auto edgeIndex { 0u }; edgeIndex < data.nodes[proximalNodeIndex].nEdges; ++edgeIndex)
+		   if(data.solution[proximalNodeIndex].cost != INT32_MAX)
 		   {
-			   auto currentEdgeIndex { data.nodes[proximalNodeIndex].startEdgeIdx + edgeIndex };
-			   auto distalNodeIndex { data.edges[currentEdgeIndex].distalNodeIdx };
-
-			   // Relaxations
-			   nodeCost proposedCost(proximalNodeIndex, data.solution[proximalNodeIndex].cost + data.edges[currentEdgeIndex].weight);
-
-			   if(data.solution[proximalNodeIndex].cost != INT32_MAX)
+			   nodeCost oldPathCost;
+			   do
 			   {
-				   nodeCost oldPathCost;
-				   do
-				   {
-					   oldPathCost = data.solution[proximalNodeIndex];
-				   } while (!data.solution[proximalNodeIndex].toAtomic()->compare_exchange_strong(oldPathCost.toUint64(), proposedCost.toUint64(), memory_order_acq_rel, memory_order_relaxed));
+				   oldPathCost = data.solution[distalNodeIndex];
+			   } while (!data.solution[distalNodeIndex].toAtomic()->compare_exchange_strong(oldPathCost.toUint64(), min(proposedCost.toUint64(), data.solution[distalNodeIndex].toUint64()), memory_order_acq_rel, memory_order_relaxed));
 
-//				   if(oldPathCost.cost > proposedCost.cost)
-//				   {
-//					   cout << "Hello" << endl;
-//					   data.solution[distalNodeIndex].toAtomic()->store(proposedCost.toUint64(), memory_order_release);
-//				   }
-//				   else
-//				   {
-//					   cout << "Hello 2" << endl;
-//					   data.solution[distalNodeIndex].toAtomic()->store(proposedCost.toUint64(), memory_order_release);
-//				   }
-//break;
-				   // There are two cases on success - actual path cost change, or parent change.
-				   if(oldPathCost.cost > proposedCost.cost)
+			   // There are two cases on success - actual path cost change, or parent change.
+			   if(oldPathCost.cost > proposedCost.cost)
+			   {
+				   // Better path found. Note the change and queue the descendants
+				   if(oldPathCost.cost != INT32_MAX)
 				   {
-					   // Better path found. Note the change and queue the descendants
-					   data.solution[distalNodeIndex].toAtomic()->store(proposedCost.toUint64(), memory_order_release);
-
-					   if(oldPathCost.cost != INT32_MAX)
-					   {
-						   // Edge has been relaxed before, put distal node into correction pool
-						   tIndex corrAddSlot { toAtomic(&data.correctionPool.addIndex)->fetch_add(1u, memory_order_acq_rel) % data.correctionPool.bufferSize };
-						   toAtomic(&data.correctionPool.pool[corrAddSlot])->store(distalNodeIndex, memory_order_release);
-					   }
-					   else
-					   {
-						   tIndex specAddSlot { toAtomic(&data.speculationPool.addIndex)->fetch_add(1u, memory_order_acq_rel) % data.speculationPool.bufferSize };
-						   auto value { toAtomic(&data.speculationPool.pool[specAddSlot])->exchange(distalNodeIndex, memory_order_release) };
-						   if(value != TNA())
-						   {
-							   toAtomic(&data.abortFlag)->store(true, memory_order_release);
-							   throw("Error Correction");
-							   return;
-						   }
-					   }
+					   // Edge has been relaxed before, put distal node into correction pool
+					   tIndex corrAddSlot { toAtomic(&data.correctionPool.addIndex)->fetch_add(1u, memory_order_acq_rel) % data.correctionPool.bufferSize };
+					   toAtomic(&data.correctionPool.pool[corrAddSlot])->store(distalNodeIndex, memory_order_release);
+					   // New task in pool, add one to incomplete tasks
+					   toAtomic(&data.nIncompleteTasks)->fetch_add(1u, memory_order_release);
 				   }
 				   else
 				   {
-					   data.solution[distalNodeIndex].toAtomic()->store(proposedCost.toUint64(), memory_order_release);
-					   auto value { data.speculationPool.pool.emplace_back(distalNodeIndex) };
-					   if(value != TNA())
-					   {
-						   toAtomic(&data.abortFlag)->store(true, memory_order_release);
-						   throw("Error Speculation");
-						   return;
-					   }
+					   tIndex specAddSlot { toAtomic(&data.speculationPool.addIndex)->fetch_add(1u, memory_order_acq_rel) % data.speculationPool.bufferSize };
+//						   auto value { toAtomic(&data.speculationPool.pool[specAddSlot])->exchange(distalNodeIndex, memory_order_release) };
+					   toAtomic(&data.speculationPool.pool[specAddSlot])->store(distalNodeIndex, memory_order_release);
+					   toAtomic(&data.nIncompleteTasks)->fetch_add(1u, memory_order_release);
+//						   if(value != TNA())
+//						   {
+//							   toAtomic(&data.abortFlag)->store(true, memory_order_release);
+//							   return;
+//						   }
 				   }
 			   }
-			   else
-			   {
-				   // This case should never happen for generational ordering
-				   throw("Cannot relax");
-				   toAtomic(&data.abortFlag)->store(true, memory_order_release);
-			   }
 		   }
-
-		   printf("sub");
-		   toAtomic(&data.nIncompleteTasks)->fetch_sub(1u, memory_order_release);
-
+		   else
+		   {
+			   // This case should never happen for generational ordering
+			   throw("Cannot relax");
+			   toAtomic(&data.abortFlag)->store(true, memory_order_release);
+		   }
 	   }
+
+	   toAtomic(&data.nIncompleteTasks)->fetch_sub(1u, memory_order_release);
    }
 
    cout << "Thread has finished" << endl;

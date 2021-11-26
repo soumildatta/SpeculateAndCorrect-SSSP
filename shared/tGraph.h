@@ -29,7 +29,16 @@ struct nodeCost
 
 	inline atomic<uint64_t> *toAtomic(void) { return (atomic<uint64_t> *) &proximalNodeIndex; }
 	inline uint64_t &toUint64(void) { return *((uint64_t *) &proximalNodeIndex); }
+
+#define nodeCostMemberList proximalNodeIndex, cost
+#define dumpNodeCost dumpList(proximalNodeIndex, cost)
 };
+
+inline ostream& operator<<(ostream &os, const nodeCost &item)
+{
+    auto &[ nodeCostMemberList ] { item };
+    return os << "{" << dumpNodeCost << "}";
+}
 
 // CSR Representation
 struct tCSRNode
@@ -37,14 +46,28 @@ struct tCSRNode
     uint32_t startEdgeIdx;
     uint32_t nEdges;
     #define tCSRNodeMemberList startEdgeIdx, nEdges
+#define dumptCSRNode dumpList(startEdgeIdx, nEdges)
 };
+
+inline ostream& operator<<(ostream &os, const tCSRNode &item)
+{
+    auto &[ tCSRNodeMemberList ] { item };
+    return os << "{" << dumptCSRNode << "}";
+}
 
 struct tCSREdge
 {
     size_t weight;
     uint32_t distalNodeIdx;
     #define tCSREdgeMemberList weight, distalNodeIdx
+#define dumptCSREdge dumpList(weight, distalNodeIdx)
 };
+
+inline ostream& operator<<(ostream &os, const tCSREdge &item)
+{
+    auto &[ tCSREdgeMemberList ] { item };
+    return os << "{" << dumptCSREdge << "}";
+}
 
 struct tGraph
 {
