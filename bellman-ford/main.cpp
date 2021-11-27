@@ -5,19 +5,29 @@
 #include "validation.h"
 #include "tSSSPPerformanceCounters.h"
 
+#include <fstream>
+using std::ofstream;
+
 tGraph processGraph(path &filename);
 
 int main(int argc, char *argv[])
 {
-	// Temporary cmd args parse
+	if(argc != 5) throw("Invalid arguments. Expected argument list: <filename> <verifyFilename> <outputFilename> <iterations>");
+
 	path filename { argv[1] };
 	path verifyFile { argv[2] };
-	int iterations { atoi(argv[3]) };
+	path outputFilename { argv[3] };
+	int iterations { atoi(argv[4]) };
 
 	tGraph graph { processGraph(filename) };
 	tSSSPPerformanceCounters performance;
 
 	double totalTime { 0 };
+
+	ofstream outputFile;
+	outputFile.open(outputFilename);
+	// Output CSV Headers
+	outputFile << "Iteration, Time\n";
 
     cout << "Performing Standard Bellman-Ford" << endl;
 
@@ -40,6 +50,8 @@ int main(int argc, char *argv[])
 			cout.flush();
 		}
 
+		outputFile << (i + 1) << ", " << time << "\n";
+
 		totalTime += time;
 	}
 
@@ -47,6 +59,7 @@ int main(int argc, char *argv[])
 	cout << "Average time for each iteration: " << totalTime/iterations << endl << endl;
 	cout << performance << endl;
 
+	outputFile.close();
     return 0;
 }
 

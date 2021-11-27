@@ -43,7 +43,7 @@ int main(int argc, char *argv[])
 	// If numThreads argument is empty, program uses max threads supported by hardware
 	if(argc < 6 || argc > 7)
 	{
-		cout << "Invalid arguments. Argument list expected: <filename> <verifyFilename> <iterations> <sourceNode> <optional = numThreads>" << endl;
+		cout << "Invalid arguments. Argument list expected: <filename> <verifyFilename> <outputFilename> <iterations> <sourceNode> <optional = numThreads>" << endl;
 		exit(-1);
 	}
 
@@ -76,7 +76,6 @@ int main(int argc, char *argv[])
 	outputFile << "Num Threads, Speedup, Time\n";
 
 	double baselineTime { 0 };
-
 	for(auto threadCount { 1u }; threadCount <= maxThreads; ++threadCount)
 	{
 		cout << "Num threads: " << threadCount << endl;
