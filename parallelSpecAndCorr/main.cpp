@@ -66,6 +66,8 @@ int main(int argc, char *argv[])
 	// Process graph
 	tGraph graph { processGraph(filename) };
 
+	double baselineTime { 0 };
+
 	for(auto threadCount { 1u }; threadCount <= maxThreads; ++threadCount)
 	{
 		cout << "Num threads: " << threadCount << endl;
@@ -121,8 +123,6 @@ int main(int argc, char *argv[])
 					exit(-1);
 				}
 			}
-//			cout << "Time taken: " << timer.getTime() << endl;
-
 
 			for(auto i { 0u }; i < threadCount; ++i)
 			{
@@ -143,7 +143,21 @@ int main(int argc, char *argv[])
 			}
 		}
 
-		cout << endl << "Avg time / iteration: " << totalTime/iterations << endl;
+		auto avgIterationTime { totalTime/iterations };
+
+		cout << endl << "Avg time / iteration: " << avgIterationTime << endl;
+
+		// Calculate speedup -- use 1 threads as baseline
+		if(threadCount == 1u)
+		{
+			baselineTime = avgIterationTime;
+			cout << "Speedup: 0" << endl;
+		}
+		else
+		{
+			auto speedup { baselineTime / avgIterationTime };
+			cout << "Speedup: " << speedup << endl;
+		}
 
 		cout << endl;
 	}
@@ -235,6 +249,7 @@ void specAndCorr(tData &data)
 					   tIndex corrAddSlot { toAtomic(&data.correctionPool.addIndex)->fetch_add(1u, memory_order_acq_rel) % data.correctionPool.bufferSize };
 					   auto value { toAtomic(&data.correctionPool.pool[corrAddSlot])->exchange(distalNodeIndex, memory_order_release) };
 //					   toAtomic(&data.correctionPool.pool[corrAddSlot])->store(distalNodeIndex, memory_order_release);
+
 					   // New task in pool, add one to incomplete tasks
 					   toAtomic(&data.nIncompleteTasks)->fetch_add(1u, memory_order_release);
 
@@ -249,6 +264,8 @@ void specAndCorr(tData &data)
 					   tIndex specAddSlot { toAtomic(&data.speculationPool.addIndex)->fetch_add(1u, memory_order_acq_rel) % data.speculationPool.bufferSize };
 					   auto value { toAtomic(&data.speculationPool.pool[specAddSlot])->exchange(distalNodeIndex, memory_order_release) };
 					   // toAtomic(&data.speculationPool.pool[specAddSlot])->store(distalNodeIndex, memory_order_release);
+
+					   // New task in pool, add one to incomplete tasks
 					   toAtomic(&data.nIncompleteTasks)->fetch_add(1u, memory_order_release);
 
 					   if(value != TNA())
@@ -261,12 +278,13 @@ void specAndCorr(tData &data)
 		   }
 		   else
 		   {
-			   // This case should never happen for generational ordering
+			   // This case should never happen with generational ordering
 			   throw("Cannot relax");
 			   toAtomic(&data.abortFlag)->store(true, memory_order_release);
 		   }
 	   }
 
+	   // Task complete, decrement from number of incomplete tasks
 	   toAtomic(&data.nIncompleteTasks)->fetch_sub(1u, memory_order_release);
    }
 
