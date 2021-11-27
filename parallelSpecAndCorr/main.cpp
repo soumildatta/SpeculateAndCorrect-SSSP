@@ -1,4 +1,3 @@
-//#include "bellmanFord.h"
 #include "tGraph.h"
 #include "tEdgeList.h"
 #include "tTimer.h"
@@ -19,10 +18,6 @@ using std::printf;
 #include <list>
 using std::list;
 
-#include <mutex>
-using std::mutex;
-using std::lock_guard;
-
 #include <atomic>
 using std::atomic_uint64_t;
 using std::memory_order_release;
@@ -33,32 +28,37 @@ using std::memory_order_relaxed;
 #include <algorithm>
 using std::min;
 
-#define makeAtomicUint64(var) (*(atomic_uint64_t *) &var)
-
 // Define max threads for device
-#define maxThreads 24
+#define maxHardwareThreads thread::hardware_concurrency()
 
 tGraph processGraph(path &filename);
 
 void specAndCorr(tData &data);
 
-mutex g_mutex;
-
 int main(int argc, char *argv[])
 {
-	// TODO: add source node and num threads to argument list
-	if(argc != 5)
+	// If numThreads argument is empty, program uses max threads supported by hardware
+	if(argc < 5 || argc > 6)
 	{
-		cout << "Invalid arguments. Argument list expected: <filename> <verifyFilename> <iterations>" << endl;
+		cout << "Invalid arguments. Argument list expected: <filename> <verifyFilename> <iterations> <sourceNode> <optional = numThreads>" << endl;
 		exit(-1);
 	}
 
 	path filename { argv[1] };
 	path verifyFilename { argv[2] };
-//	int iterations { atoi(argv[3]) };
+	int iterations { atoi(argv[3]) };
 	uint64_t sourceNode { (uint64_t) atoi(argv[4]) };
 
-	cout << "Max threads supported by this system: " << maxThreads << endl;
+	// Assign max number of threads to be used by program
+	auto maxThreads { maxHardwareThreads };
+	if(argc == 6)
+	{
+		maxThreads = atoi(argv[5]);
+	}
+
+	cout << "Max threads supported by this system: " << maxHardwareThreads << endl;
+	cout << "Using " << maxThreads << " threads with " << iterations << " iterations." << endl;
+
 
 	// Struct to be passed as argument list
 	struct tData *data = (struct tData *)malloc(sizeof(struct tData));
@@ -66,76 +66,90 @@ int main(int argc, char *argv[])
 	// Process graph
 	tGraph graph { processGraph(filename) };
 
-	// Initialize argument struct
-	data->nodes = graph.nodes;
-	data->edges = graph.edges;
-
-	// Initial costs are set to infinity. Source node is set to 0
-	const nodeCost initialCost(~0u, INT32_MAX);
-	vector<nodeCost> solution(graph.nNodes, initialCost);
-	solution[sourceNode] = nodeCost(sourceNode, 0);
-	data->solution = solution;
-
-	// Initialize speculation pool with source node is in the pool
-	//	vector<uint32_t> speculationPool(graph.nNodes);
-	vector<uint64_t> speculationPool(graph.nNodes, TNA());
-	speculationPool[0u] = sourceNode;
-	data->speculationPool.pool = speculationPool;
-	data->speculationPool.removeIndex = 0u;
-	data->speculationPool.addIndex = 1u;
-	data->speculationPool.bufferSize = graph.nNodes;
-
-
-	// Initialize correction pool that is empty
-	//	vector<uint32_t> correctionPool(graph.nNodes);
-	vector<uint64_t> correctionPool(graph.nNodes, TNA());
-	data->correctionPool.pool = correctionPool;
-	data->correctionPool.removeIndex = 0u;
-	data->correctionPool.addIndex = 0u;
-	data->correctionPool.bufferSize = graph.nNodes;
-
-	// Source node
-	data->source = sourceNode;
-
-	data->nIncompleteTasks = 1u;
-	toAtomic(&data->abortFlag)->store(false, memory_order_release);
-
-	// Updates an index for each thread
-	data->threadTrackIndex = 0u;
-
-	// Threads
-	thread *threads[maxThreads];
-
-	for(auto i { 0u }; i < maxThreads; ++i)
+	for(auto threadCount { 1u }; threadCount <= maxThreads; ++threadCount)
 	{
-		cout << "creating thread " << i << endl;
-		threads[i] = new thread(specAndCorr, ref(*data));
-		if(threads[i] == nullptr)
+		cout << "Num threads: " << threadCount << endl;
+		cout << "Solution: " << endl;
+
+		double totalTime { 0 };
+
+		for(auto iteration { 0u }; iteration < iterations; ++iteration)
 		{
-			cout << "Error" << endl;
-			exit(-1);
+			// Initialize argument struct
+			data->nodes = graph.nodes;
+			data->edges = graph.edges;
+
+			// Initial costs are set to infinity. Source node is set to 0
+			const nodeCost initialCost(~0u, INT32_MAX);
+			vector<nodeCost> solution(graph.nNodes, initialCost);
+			solution[sourceNode] = nodeCost(sourceNode, 0);
+			data->solution = solution;
+
+			// Initialize speculation pool with source node is in the pool
+			vector<uint64_t> speculationPool(graph.nNodes, TNA());
+			speculationPool[0u] = sourceNode;
+			data->speculationPool.pool = speculationPool;
+			data->speculationPool.removeIndex = 0u;
+			data->speculationPool.addIndex = 1u;
+			data->speculationPool.bufferSize = graph.nNodes;
+
+			// Initialize correction pool that is empty
+			vector<uint64_t> correctionPool(graph.nNodes, TNA());
+			data->correctionPool.pool = correctionPool;
+			data->correctionPool.removeIndex = 0u;
+			data->correctionPool.addIndex = 0u;
+			data->correctionPool.bufferSize = graph.nNodes;
+
+			// Source node
+			data->source = sourceNode;
+
+			data->nIncompleteTasks = 1u;
+			toAtomic(&data->abortFlag)->store(false, memory_order_release);
+
+			// Threads
+			thread *threads[threadCount];
+
+			tTimer timer;
+			for(auto i { 0u }; i < threadCount; ++i)
+			{
+				// Creating threads
+				threads[i] = new thread(specAndCorr, ref(*data));
+
+				if(threads[i] == nullptr)
+				{
+					cout << "Error" << endl;
+					exit(-1);
+				}
+			}
+//			cout << "Time taken: " << timer.getTime() << endl;
+
+
+			for(auto i { 0u }; i < threadCount; ++i)
+			{
+				// Joining threads
+				threads[i]->join();
+			}
+			totalTime += timer.getTime();
+
+			if(readSolution(verifyFilename, data->solution))
+			{
+				cout << "o";
+				cout.flush();
+			}
+			else
+			{
+				cout << "x";
+				cout.flush();
+			}
 		}
-	}
 
-	for(auto i { 0u }; i < maxThreads; ++i)
-	{
-		cout << "joining thread " << i << endl;
-		threads[i]->join();
-	}
+		cout << endl << "Avg time / iteration: " << totalTime/iterations << endl;
 
-	cout << endl << "Solution: " << endl;
-	if(readSolution(verifyFilename, data->solution))
-	{
-		cout << "o";
+		cout << endl;
 	}
-	else
-	{
-		cout << "x";
-	}
-
-	pthread_exit(NULL);
 
 	free(data);
+	pthread_exit(NULL);
     return 0;
 }
 
@@ -184,7 +198,7 @@ void specAndCorr(tData &data)
 		   else
 		   {
 			   // No task available
-			   if(maxThreads > thread::hardware_concurrency())
+			   if(maxHardwareThreads > thread::hardware_concurrency())
 			   {
 				   std::this_thread::yield();
 			   }
@@ -219,21 +233,29 @@ void specAndCorr(tData &data)
 				   {
 					   // Edge has been relaxed before, put distal node into correction pool
 					   tIndex corrAddSlot { toAtomic(&data.correctionPool.addIndex)->fetch_add(1u, memory_order_acq_rel) % data.correctionPool.bufferSize };
-					   toAtomic(&data.correctionPool.pool[corrAddSlot])->store(distalNodeIndex, memory_order_release);
+					   auto value { toAtomic(&data.correctionPool.pool[corrAddSlot])->exchange(distalNodeIndex, memory_order_release) };
+//					   toAtomic(&data.correctionPool.pool[corrAddSlot])->store(distalNodeIndex, memory_order_release);
 					   // New task in pool, add one to incomplete tasks
 					   toAtomic(&data.nIncompleteTasks)->fetch_add(1u, memory_order_release);
+
+					   if(value != TNA())
+					   {
+						   toAtomic(&data.abortFlag)->store(true, memory_order_release);
+						   return;
+					   }
 				   }
 				   else
 				   {
 					   tIndex specAddSlot { toAtomic(&data.speculationPool.addIndex)->fetch_add(1u, memory_order_acq_rel) % data.speculationPool.bufferSize };
-//						   auto value { toAtomic(&data.speculationPool.pool[specAddSlot])->exchange(distalNodeIndex, memory_order_release) };
-					   toAtomic(&data.speculationPool.pool[specAddSlot])->store(distalNodeIndex, memory_order_release);
+					   auto value { toAtomic(&data.speculationPool.pool[specAddSlot])->exchange(distalNodeIndex, memory_order_release) };
+					   // toAtomic(&data.speculationPool.pool[specAddSlot])->store(distalNodeIndex, memory_order_release);
 					   toAtomic(&data.nIncompleteTasks)->fetch_add(1u, memory_order_release);
-//						   if(value != TNA())
-//						   {
-//							   toAtomic(&data.abortFlag)->store(true, memory_order_release);
-//							   return;
-//						   }
+
+					   if(value != TNA())
+					   {
+						   toAtomic(&data.abortFlag)->store(true, memory_order_release);
+						   return;
+					   }
 				   }
 			   }
 		   }
@@ -248,13 +270,12 @@ void specAndCorr(tData &data)
 	   toAtomic(&data.nIncompleteTasks)->fetch_sub(1u, memory_order_release);
    }
 
-   cout << "Thread has finished" << endl;
    return;
 }
 
 tGraph processGraph(path &filename)
 {
-	cout << "Processing Graph" << endl;
+	cout << "Processing Graph" << endl << endl;
 
 	tEdgeList DIMACSEdgeList;
 	DIMACSEdgeList.importDIMACSEdgeList(filename.c_str());
