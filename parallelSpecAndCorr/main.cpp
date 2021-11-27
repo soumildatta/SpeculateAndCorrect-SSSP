@@ -28,6 +28,9 @@ using std::memory_order_relaxed;
 #include <algorithm>
 using std::min;
 
+#include <fstream>
+using std::ofstream;
+
 // Define max threads for device
 #define maxHardwareThreads thread::hardware_concurrency()
 
@@ -38,7 +41,7 @@ void specAndCorr(tData &data);
 int main(int argc, char *argv[])
 {
 	// If numThreads argument is empty, program uses max threads supported by hardware
-	if(argc < 5 || argc > 6)
+	if(argc < 6 || argc > 7)
 	{
 		cout << "Invalid arguments. Argument list expected: <filename> <verifyFilename> <iterations> <sourceNode> <optional = numThreads>" << endl;
 		exit(-1);
@@ -46,14 +49,15 @@ int main(int argc, char *argv[])
 
 	path filename { argv[1] };
 	path verifyFilename { argv[2] };
-	int iterations { atoi(argv[3]) };
-	uint64_t sourceNode { (uint64_t) atoi(argv[4]) };
+	path outputFilename { argv[3] };
+	int iterations { atoi(argv[4]) };
+	uint64_t sourceNode { (uint64_t) atoi(argv[5]) };
 
 	// Assign max number of threads to be used by program
 	auto maxThreads { maxHardwareThreads };
-	if(argc == 6)
+	if(argc == 7)
 	{
-		maxThreads = atoi(argv[5]);
+		maxThreads = atoi(argv[6]);
 	}
 
 	cout << "Max threads supported by this system: " << maxHardwareThreads << endl;
@@ -65,6 +69,13 @@ int main(int argc, char *argv[])
 
 	// Process graph
 	tGraph graph { processGraph(filename) };
+
+	ofstream outputFile;
+	outputFile.open(outputFilename);
+	// Output CSV Headers
+	outputFile << "Num Threads, Speedup, Time\n";
+
+	double baselineTime { 0 };
 
 	for(auto threadCount { 1u }; threadCount <= maxThreads; ++threadCount)
 	{
@@ -121,8 +132,6 @@ int main(int argc, char *argv[])
 					exit(-1);
 				}
 			}
-//			cout << "Time taken: " << timer.getTime() << endl;
-
 
 			for(auto i { 0u }; i < threadCount; ++i)
 			{
@@ -143,10 +152,28 @@ int main(int argc, char *argv[])
 			}
 		}
 
-		cout << endl << "Avg time / iteration: " << totalTime/iterations << endl;
+		auto avgIterationTime { totalTime/iterations };
+
+		cout << endl << "Avg time / iteration: " << avgIterationTime << endl;
+
+		// Calculate speedup -- use 1 threads as baseline
+		if(threadCount == 1u)
+		{
+			baselineTime = avgIterationTime;
+			cout << "Speedup: 0" << endl;
+			outputFile << threadCount << ", 0," << avgIterationTime << "\n";
+		}
+		else
+		{
+			auto speedup { baselineTime / avgIterationTime };
+			cout << "Speedup: " << speedup << endl;
+			outputFile << threadCount << ", " << speedup << ", " << avgIterationTime << "\n";
+		}
 
 		cout << endl;
 	}
+
+	outputFile.close();
 
 	free(data);
 	pthread_exit(NULL);
@@ -235,6 +262,7 @@ void specAndCorr(tData &data)
 					   tIndex corrAddSlot { toAtomic(&data.correctionPool.addIndex)->fetch_add(1u, memory_order_acq_rel) % data.correctionPool.bufferSize };
 					   auto value { toAtomic(&data.correctionPool.pool[corrAddSlot])->exchange(distalNodeIndex, memory_order_release) };
 //					   toAtomic(&data.correctionPool.pool[corrAddSlot])->store(distalNodeIndex, memory_order_release);
+
 					   // New task in pool, add one to incomplete tasks
 					   toAtomic(&data.nIncompleteTasks)->fetch_add(1u, memory_order_release);
 
@@ -249,6 +277,8 @@ void specAndCorr(tData &data)
 					   tIndex specAddSlot { toAtomic(&data.speculationPool.addIndex)->fetch_add(1u, memory_order_acq_rel) % data.speculationPool.bufferSize };
 					   auto value { toAtomic(&data.speculationPool.pool[specAddSlot])->exchange(distalNodeIndex, memory_order_release) };
 					   // toAtomic(&data.speculationPool.pool[specAddSlot])->store(distalNodeIndex, memory_order_release);
+
+					   // New task in pool, add one to incomplete tasks
 					   toAtomic(&data.nIncompleteTasks)->fetch_add(1u, memory_order_release);
 
 					   if(value != TNA())
@@ -261,12 +291,13 @@ void specAndCorr(tData &data)
 		   }
 		   else
 		   {
-			   // This case should never happen for generational ordering
+			   // This case should never happen with generational ordering
 			   throw("Cannot relax");
 			   toAtomic(&data.abortFlag)->store(true, memory_order_release);
 		   }
 	   }
 
+	   // Task complete, decrement from number of incomplete tasks
 	   toAtomic(&data.nIncompleteTasks)->fetch_sub(1u, memory_order_release);
    }
 
