@@ -8,3 +8,7 @@ ln -s ../shared/validation.h ./validation.h
 ln -s ../shared/validation.cpp ./validation.cpp
 
 ln -s ../shared/tSSSPPerformanceCounters.h ./tSSSPPerformanceCounters.h
+
+ln -s ../shared/UtilityFunctions.h ./UtilityFunctions.h
+
+ln -s ../shared/ForEach.h ./ForEach.h
