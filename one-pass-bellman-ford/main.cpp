@@ -42,8 +42,6 @@ int main(int argc, char *argv[])
 		}
 
 		totalTime += time;
-
-
 	}
 
 	cout << "\nTotal time for " << iterations << " iterations: " << totalTime << endl;
