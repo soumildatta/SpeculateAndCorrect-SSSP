@@ -2,19 +2,18 @@ cmake_minimum_required(VERSION 3.0)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -std=c++17")
 
-project(SpecAndCorr)
+project(ParallelSpecAndCorr)
 
 add_executable(
-	SpecAndCorr
+	ParallelSpecAndCorr
 	main.cpp
-	optimizedBellmanFord.cpp
-	optimizedBellmanFord.h
-	UtilityFunctions.h
 	ForEach.h
+	tData.h
 	tEdgeList.h
 	tGraph.h
+	tPool.h
 	tTimer.h
+	UtilityFunctions.h
 	validation.cpp
 	validation.h
-	tSSSPPerformanceCounters.h
 )
