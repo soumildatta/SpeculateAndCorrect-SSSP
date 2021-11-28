@@ -1,7 +1,8 @@
-#include "optimizedBellmanFord.h"
+#include "specAndCorr.h"
+
 #include "tSSSPPerformanceCounters.h"
 
-double optimizedBellmanFord(tGraph &graph, const uint32_t &sourceNode, vector<nodeCost> &nodeCosts, tSSSPPerformanceCounters &performance)
+double specAndCorr(tGraph &graph, const uint32_t &sourceNode, vector<nodeCost> &nodeCosts, tSSSPPerformanceCounters &performance)
 {
 	tTimer timer;
 

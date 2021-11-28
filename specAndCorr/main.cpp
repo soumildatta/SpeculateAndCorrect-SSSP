@@ -1,9 +1,9 @@
-#include "optimizedBellmanFord.h"
 #include "tGraph.h"
 #include "tEdgeList.h"
 #include "tTimer.h"
 #include "validation.h"
 #include "tSSSPPerformanceCounters.h"
+#include "specAndCorr.h"
 
 #include <fstream>
 using std::ofstream;
@@ -41,7 +41,7 @@ int main(int argc, char *argv[])
 
 		vector<nodeCost> nodeCosts;
 
-		auto time { optimizedBellmanFord(graph, 0u, nodeCosts, performance) };
+		auto time { specAndCorr(graph, 0u, nodeCosts, performance) };
 
 		// Checking solution
 		if(readSolution(verifyFile, nodeCosts))
