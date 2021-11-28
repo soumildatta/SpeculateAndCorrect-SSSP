@@ -7,8 +7,8 @@ project(SpecAndCorr)
 add_executable(
 	SpecAndCorr
 	main.cpp
-	optimizedBellmanFord.cpp
-	optimizedBellmanFord.h
+	specAndCorr.cpp
+	specAndCorr.h
 	UtilityFunctions.h
 	ForEach.h
 	tEdgeList.h
