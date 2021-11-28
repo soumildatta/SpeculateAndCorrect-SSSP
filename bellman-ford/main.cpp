@@ -12,7 +12,11 @@ tGraph processGraph(path &filename);
 
 int main(int argc, char *argv[])
 {
-	if(argc != 5) throw("Invalid arguments. Expected argument list: <filename> <verifyFilename> <outputFilename> <iterations>");
+	if(argc != 5)
+	{
+		cout << "Invalid arguments. Expected argument list: <filename> <verifyFilename> <outputFilename> <iterations>" << endl;
+		exit(1);
+	}
 
 	path filename { argv[1] };
 	path verifyFile { argv[2] };
