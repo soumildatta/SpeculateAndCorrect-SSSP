@@ -1,4 +1,5 @@
-# Senior Project
-A repo for my senior project
+# Speculate And Correct Algorithm
 
-This project proposes an optimized version of the Bellman-Ford SSSP algorithm, which can complete in one pass instead of n-1 passes. 
+This project was created as my senior project.
+
+This project proposes an optimized version of the Bellman-Ford SSSP algorithm, which can carry out the SSSP algorithm more efficiently than the standard Bellman-Ford algorithm.
