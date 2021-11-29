@@ -2,7 +2,9 @@
 
 This project was created as my senior project.
 
-This project proposes an optimized version of the Bellman-Ford SSSP algorithm, which can carry out the SSSP algorithm more efficiently than the standard Bellman-Ford algorithm.
+This project proposes an optimized version of the Bellman-Ford SSSP algorithm, which can carry out the SSSP algorithm more efficiently than the standard Bellman-Ford algorithm while retaining the Bellman-Ford characteristics such as detecting negative cycles in the graph.
+
+The basis of optiimzation for this new algorithm is the traversal of the graph in a generational manner such that no children is processed before their parents are processed. This reduces the number of unnecessary passes through the graph. 
 
 ## Dependencies
 **Hardware Requirements:**
