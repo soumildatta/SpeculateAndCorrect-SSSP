@@ -12,9 +12,9 @@ tGraph processGraph(path &filename);
 
 int main(int argc, char *argv[])
 {
-	if(argc != 5)
+	if(argc != 6)
 	{
-		cout << "Invalid arguments. Expected argument list: <filename> <verifyFilename> <outputFilename> <iterations>" << endl;
+		cout << "Invalid arguments. Expected argument list: <filename> <verifyFilename> <outputFilename> <iterations> <sourceNode>" << endl;
 		exit(1);
 	}
 
@@ -22,6 +22,7 @@ int main(int argc, char *argv[])
 	path verifyFile { argv[2] };
 	path outputFilename { argv[3] };
 	int iterations { atoi(argv[4]) };
+	uint32_t sourceNode { (uint32_t) atoi(argv[5]) };
 
 	tGraph graph { processGraph(filename) };
 	tSSSPPerformanceCounters performance;
@@ -40,7 +41,7 @@ int main(int argc, char *argv[])
 		performance.clear();
 
 		vector<nodeCost> nodeCosts;
-		auto time { bellmanFord(graph, 0u, nodeCosts, performance) };
+		auto time { bellmanFord(graph, sourceNode, nodeCosts, performance) };
 
 		// Checking solution
 		if(readSolution(verifyFile, nodeCosts))

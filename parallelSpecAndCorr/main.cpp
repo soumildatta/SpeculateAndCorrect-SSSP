@@ -260,7 +260,6 @@ void specAndCorr(tData &data)
 					   // Edge has been relaxed before, put distal node into correction pool
 					   tIndex corrAddSlot { toAtomic(&data.correctionPool.addIndex)->fetch_add(1u, memory_order_acq_rel) % data.correctionPool.bufferSize };
 					   auto value { toAtomic(&data.correctionPool.pool[corrAddSlot])->exchange(distalNodeIndex, memory_order_release) };
-//					   toAtomic(&data.correctionPool.pool[corrAddSlot])->store(distalNodeIndex, memory_order_release);
 
 					   // New task in pool, add one to incomplete tasks
 					   toAtomic(&data.nIncompleteTasks)->fetch_add(1u, memory_order_release);
