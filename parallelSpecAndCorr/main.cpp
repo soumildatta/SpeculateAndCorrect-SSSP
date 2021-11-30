@@ -110,10 +110,14 @@ int main(int argc, char *argv[])
 			data->correctionPool.addIndex = 0u;
 			data->correctionPool.bufferSize = graph.nNodes;
 
+			vector<uint32_t> nodeVisitCounts(graph.nNodes, 0u);
+			data->nodeVisitCounts = nodeVisitCounts;
+
 			// Source node
 			data->source = sourceNode;
 
 			data->nIncompleteTasks = 1u;
+			data->nNodes = graph.nNodes;
 			toAtomic(&data->abortFlag)->store(false, memory_order_release);
 
 			// Threads
@@ -234,6 +238,14 @@ void specAndCorr(tData &data)
 
 	   // Task Prologue
 	   proximalNodeIndex = myTaskToken;
+
+	   // Detection of negative edge cycle
+	   if(toAtomic(&data.nodeVisitCounts[proximalNodeIndex])->fetch_add(1u, memory_order_acq_rel) >= data.nNodes)
+	   {
+		   // Negative edge cycle
+		   toAtomic(&data.abortFlag)->store(true, memory_order_release);
+		   return;
+	   }
 
 	   for(auto edgeIndex { 0u }; edgeIndex < data.nodes[proximalNodeIndex].nEdges; ++edgeIndex)
 	   {

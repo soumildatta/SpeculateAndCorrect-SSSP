@@ -24,15 +24,18 @@ struct tData {
 
 	vector<nodeCost> solution;
 
+	vector<uint32_t> nodeVisitCounts;
+
 	tPool speculationPool;
 	tPool correctionPool;
 
 	uint64_t nIncompleteTasks;
 	uint32_t source;
+	uint32_t nNodes;
 
 	bool abortFlag;
 
-#define tDataMemberList nodes, edges, solution, speculationPool, correctionPool, nIncompleteTasks, source, abortFlag
+#define tDataMemberList nodes, edges, solution, nodeVisitCounts, speculationPool, correctionPool, nIncompleteTasks, source, nNodes, abortFlag
 };
 
 #endif /* TDATA_H */
