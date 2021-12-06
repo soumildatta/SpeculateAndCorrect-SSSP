@@ -32,10 +32,11 @@ struct tData {
 	uint64_t nIncompleteTasks;
 	uint32_t source;
 	uint32_t nNodes;
+	uint32_t maxThreads;
 
 	bool abortFlag;
 
-#define tDataMemberList nodes, edges, solution, nodeVisitCounts, speculationPool, correctionPool, nIncompleteTasks, source, nNodes, abortFlag
+#define tDataMemberList nodes, edges, solution, nodeVisitCounts, speculationPool, correctionPool, nIncompleteTasks, source, nNodes, maxThreads, abortFlag
 };
 
 #endif /* TDATA_H */

@@ -31,9 +31,6 @@ using std::list;
 #include <locale>
 using std::locale;
 
-#include <map>
-using std::map;
-
 #include <numeric>
 using std::accumulate;
 
@@ -56,9 +53,6 @@ using std::istringstream;
 #include <string>
 using std::string;
 using std::literals::string_literals::operator""s;
-
-#include <unordered_map>
-using std::unordered_map;
 
 #include <utility>
 using std::pair;
@@ -117,31 +111,6 @@ inline atomic<T> *toAtomic(T *var) { return (atomic<T> *) var; }
 //template<class T>
 //inline atomic<T> *toAtomic(T &var) { return (atomic<T> *) &var; }
 
-inline string replace_all(const string &inString, const string &what, const string &with)
-{
-    string outString { inString };
-    for (string::size_type pos{ 0u }; outString.npos != (pos = outString.find(what.data(), pos, what.length())); pos += with.length())
-    {
-        outString.replace(pos, what.length(), with.data(), with.length());
-    }
-
-    return outString;
-}
-
-inline path Canonical(const path &filePath)
-{
-    if (exists(filePath))
-    {
-        // File exists.  We can return canonical form.
-        return canonical(filePath);
-    }
-    else
-    {
-        // File does not exist.  the best we can do is absolute form.
-        return absolute(filePath);
-    }
-}
-
 // Handy == operator on vectors.
 template<class T>
 inline bool operator==(const vector<T> &lhs, const vector<T> &rhs)
@@ -191,29 +160,7 @@ inline void initializeVector(vector<T> &vec, const T &&value)
 	return;
 }
 
-// Get regular expression match into a vector<string>
-inline bool matchRE(const string &str, vector<string> &matches, const regex &regEx, match_flag_type matchFlags = match_default)
-{
-    smatch regExcMatch;
-    matches.clear();
-
-    if (regex_match(str, regExcMatch, regEx, matchFlags))
-    {
-        matches.reserve(regExcMatch.size());
-        for (auto i { 1u }; i < regExcMatch.size(); ++i)
-        {
-            matches.push_back(regExcMatch[i]);
-        }
-
-        return true;
-    }
-    else
-    {
-        return false;
-    }
-}
-
-// Handy debugging macros.
+// Handy debugging macros
 #define dumpVar(var) #var ":" << var
 #define sepDumpVar(var) ", " #var ": " << var
 
@@ -274,69 +221,6 @@ inline ostream& operator<<(ostream &os, const C<T, A, Tn ...> &container)
 
     // Container close brace;
     return os << "}"s;
-}
-
-//Convert a string to any numeric type with >> defined.
-template<typename T>
-inline T toNumber(const string &value)
-{
-    T temp;
-    istringstream iss(value);
-    iss >> temp;
-
-    return temp;
-}
-
-// Convent any type with << defined to a string.
-template<typename T>
-inline string toString(const T &value)
-{
-    ostringstream oss;
-    oss << value;
-
-    return oss.str();
-}
-
-// Get a copy of lower case string.
-inline string toLower(const string &source)
-{
-    string temp(source.size(), ' ');
-    transform(source.begin(), source.end(), temp.begin(), ::tolower);
-
-    return temp;
-}
-
-// Lower case string in place.
-inline string& toLowerThis(string &source)
-{
-    transform(source.begin(), source.end(), source.begin(), ::tolower);
-
-    return source;
-}
-
-// Get a copy of Upper case string.
-inline string toUpper(const string &source)
-{
-    string temp(source.size(), ' ');
-    transform(source.begin(), source.end(), temp.begin(), ::toupper);
-
-    return temp;
-}
-
-// Upper case string in place.
-inline string& toUpperThis(string &source)
-{
-    transform(source.begin(), source.end(), source.begin(), ::toupper);
-
-    return source;
-}
-
-inline string getTimeStamp(const string &fmt = "%Y-%m-%d %H:%M:%S"s)
-{
-    auto t = time(nullptr);
-    auto tm = localtime(&t);
-    assert(tm);
-    return toString(put_time(tm, fmt.c_str()));
 }
 
 #endif

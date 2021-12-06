@@ -1,10 +1,3 @@
-/*
- * validation.h
- *
- *  Created on: Oct 27, 2021
- *      Author: sdatta
- */
-
 #ifndef VALIDATION_H
 #define VALIDATION_H
 

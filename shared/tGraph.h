@@ -18,6 +18,7 @@ using std::atomic;
 
 #include "tEdgeList.h"
 
+// Struct to store the index of a parent node, and the cost to its child
 struct nodeCost
 {
 	uint32_t proximalNodeIndex;
@@ -40,7 +41,7 @@ inline ostream& operator<<(ostream &os, const nodeCost &item)
     return os << "{" << dumpNodeCost << "}";
 }
 
-// CSR Representation
+// Compressed Sparse Row Node Representation
 struct tCSRNode
 {
     uint32_t startEdgeIdx;
@@ -55,6 +56,7 @@ inline ostream& operator<<(ostream &os, const tCSRNode &item)
     return os << "{" << dumptCSRNode << "}";
 }
 
+// Compressed Sparse Row Edge Representation
 struct tCSREdge
 {
     size_t weight;
@@ -83,6 +85,7 @@ struct tGraph
     // Constructor
     inline tGraph(void) : nNodes(0u), nEdges(0u) { return; }
 
+    // Converts an edge list into a compressed sparse row representation
     inline void convertEdgeList(tEdgeList &edgeList)
     {
         nodes.clear();
@@ -90,10 +93,7 @@ struct tGraph
         nodes.resize(edgeList.getnNodes(), tCSRNode());
         edges.reserve(edgeList.getnEdges());
 
-//        edgeList.sort(tEdgeList::compareEntries);
-
         // At this point, edge list is sorted, and all proximal nodes will be grouped together
-
         tCSRNode node;
         tCSREdge edge;
         auto prevNode { ~0u };

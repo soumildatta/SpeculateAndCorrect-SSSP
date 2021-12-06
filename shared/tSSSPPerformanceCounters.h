@@ -5,6 +5,7 @@
 
 struct tSSSPPerformanceCounters
 {
+	// All the items that can be collected as statistics
 	tPerfCounter nNodesVisited;
     tPerfCounter nAlreadyOptimal;
     tPerfCounter nBetterParentIndex;
@@ -22,6 +23,7 @@ struct tSSSPPerformanceCounters
         clear();
     }
 
+    // Reset everything to 0
     inline void clear(void)
     {
     	nNodesVisited = 0u;
@@ -36,6 +38,7 @@ struct tSSSPPerformanceCounters
         return;
     }
 
+    // Add current value to each item in the struct
 	inline tSSSPPerformanceCounters &operator+=(const tSSSPPerformanceCounters &rhs)
 	{
 		nNodesVisited += rhs.nNodesVisited;

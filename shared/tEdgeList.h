@@ -70,6 +70,7 @@ struct tEdgeList : public list<tEdgeListItem>
 		return lEntry.proximalNode != rEntry.proximalNode ? lEntry.proximalNode < rEntry.proximalNode : lEntry.distalNode < rEntry.distalNode;
 	}
 
+    // Method to parse DIMACS dataset .gr files
     inline void importDIMACSEdgeList(const string &filename)
 	{
 		tLineEntry entry;
@@ -82,6 +83,7 @@ struct tEdgeList : public list<tEdgeListItem>
 
 		ifstream file(filename);
 
+		// If file is empty throw error
 		if (file.peek() == ifstream::traits_type::eof())
 		{
 			throw("Unable to read file");
@@ -110,6 +112,7 @@ struct tEdgeList : public list<tEdgeListItem>
 			iss >> dest;
 			iss >> entry.weight;
 
+			// Format to match validation files
 			entry.proximalNode = Format("%16s", src.c_str());
 			entry.distalNode = Format("%16s", dest.c_str());
 
@@ -132,13 +135,14 @@ struct tEdgeList : public list<tEdgeListItem>
 			nodeIdToIndex[nodeID] = nodeIdToIndex.size();
 		}
 
+		// Sort the edge strings with the defined comparison function
 		edgeStrings.sort(compareEntries);
 
 		for (const auto &edgeString : edgeStrings)
 		{
+			// Create tEdgeListItem to insert into struct list for each line in edgeStrings
 			edge.proximalNodeIdx = getNodeID(nodeIdToIndex, edgeString.proximalNode);
 			edge.distalNodeIdx = getNodeID(nodeIdToIndex, edgeString.distalNode);
-			// TODO: Make sure no empty weights
 			edge.weight = stoi(edgeString.weight);
 
 			// Push to struct list

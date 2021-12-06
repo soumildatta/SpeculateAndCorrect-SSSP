@@ -12,18 +12,21 @@ tGraph processGraph(const path &filename);
 
 int main(int argc, char *argv[])
 {
+	// Check for invalid command line arguments
 	if(argc != 6)
 	{
 		cout << "Invalid arguments. Expected argument list: <filename> <verifyFilename> <outputFilename> <iterations> <sourceNode>" << endl;
 		exit(1);
 	}
 
+	// Parse command line arguments
 	path filename { argv[1] };
 	path verifyFile { argv[2] };
 	path outputFilename { argv[3] };
 	int iterations { atoi(argv[4]) };
 	uint32_t sourceNode { (uint32_t) atoi(argv[5]) };
 
+	// Process DIMACS graph .gr file
 	tGraph graph { processGraph(filename) };
 	tSSSPPerformanceCounters performance;
 
@@ -36,11 +39,15 @@ int main(int argc, char *argv[])
 
 	cout << "Performing Optimized Bellman Ford" << endl;
 
+	// Perform user defined number of iterations
 	for(auto i { 0 }; i < iterations; ++i)
 	{
 		performance.clear();
 
+		// Solution vector
 		vector<nodeCost> nodeCosts;
+
+		// Perform algorithm and record time
 		auto time { specAndCorr(graph, sourceNode, nodeCosts, performance) };
 
 		// Checking solution
@@ -68,6 +75,7 @@ int main(int argc, char *argv[])
     return 0;
 }
 
+// Process graph file
 tGraph processGraph(const path &filename)
 {
 	cout << "Processing Graph" << endl;

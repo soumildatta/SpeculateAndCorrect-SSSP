@@ -47,6 +47,7 @@ int main(int argc, char *argv[])
 		exit(-1);
 	}
 
+	// Parse command line inputs
 	path filename { argv[1] };
 	path verifyFilename { argv[2] };
 	path outputFilename { argv[3] };
@@ -62,7 +63,6 @@ int main(int argc, char *argv[])
 
 	cout << "Max threads supported by this system: " << maxHardwareThreads << endl;
 	cout << "Using " << maxThreads << " threads with " << iterations << " iterations." << endl;
-
 
 	// Struct to be passed as argument list
 	struct tData *data = (struct tData *)malloc(sizeof(struct tData));
@@ -83,6 +83,7 @@ int main(int argc, char *argv[])
 
 		double totalTime { 0 };
 
+		// Perform algorithm for user defined number of iterations
 		for(auto iteration { 0u }; iteration < iterations; ++iteration)
 		{
 			// Initialize argument struct
@@ -110,19 +111,21 @@ int main(int argc, char *argv[])
 			data->correctionPool.addIndex = 0u;
 			data->correctionPool.bufferSize = graph.nNodes;
 
+			// Node visit counts keep track of negative edge loops
 			vector<uint32_t> nodeVisitCounts(graph.nNodes, 0u);
 			data->nodeVisitCounts = nodeVisitCounts;
 
-			// Source node
+			// Scalar initializations
 			data->source = sourceNode;
-
 			data->nIncompleteTasks = 1u;
 			data->nNodes = graph.nNodes;
+			data->maxThreads = maxThreads;
 			toAtomic(&data->abortFlag)->store(false, memory_order_release);
 
 			// Threads
 			thread *threads[threadCount];
 
+			// Start timer and threads
 			tTimer timer;
 			for(auto i { 0u }; i < threadCount; ++i)
 			{
@@ -143,6 +146,7 @@ int main(int argc, char *argv[])
 			}
 			totalTime += timer.getTime();
 
+			// Verify solutions from algorithm with solution file
 			if(readSolution(verifyFilename, data->solution))
 			{
 				cout << "o";
@@ -211,12 +215,15 @@ void specAndCorr(tData &data)
 		   corrThreadNeedsWork = false;
 	   }
 
+	   // Remove by prioritizing the correction pool
 	   myTaskToken = toAtomic(&data.correctionPool.pool[corrRemoveSlot])->exchange(TNA(), memory_order_acq_rel);
 
+	   // If myTaskToken is not TNA, that means correction pool was successfully removed from
 	   if(myTaskToken != TNA())
 	   {
 		   corrThreadNeedsWork = true;
 	   }
+	   // If there is nothing in correction pool, try speculation pool
 	   else
 	   {
 		   myTaskToken = toAtomic(&data.speculationPool.pool[specRemoveSlot])->exchange(TNA(), memory_order_acq_rel);
@@ -228,7 +235,7 @@ void specAndCorr(tData &data)
 		   else
 		   {
 			   // No task available
-			   if(maxHardwareThreads > thread::hardware_concurrency())
+			   if(data.maxThreads > thread::hardware_concurrency())
 			   {
 				   std::this_thread::yield();
 			   }
@@ -252,11 +259,14 @@ void specAndCorr(tData &data)
 		   auto currentEdgeIndex { data.nodes[proximalNodeIndex].startEdgeIdx + edgeIndex };
 		   auto distalNodeIndex { data.edges[currentEdgeIndex].distalNodeIdx };
 
-		   // Relaxations
+		   // Potential better path cost
 		   nodeCost proposedCost(proximalNodeIndex, data.solution[proximalNodeIndex].cost + data.edges[currentEdgeIndex].weight);
 
+		   // Relaxations
+		   // Make sure the parent node has been relaxed before continuing
 		   if(data.solution[proximalNodeIndex].cost != INT32_MAX)
 		   {
+			   // Assign the minimum between the old path and the proposed path cost to the solution vector with compare exchange
 			   nodeCost oldPathCost;
 			   do
 			   {

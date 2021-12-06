@@ -16,6 +16,7 @@ using std::ifstream;
 
 #include "tGraph.h"
 #include "UtilityFunctions.h"
+#include "tSSSPPerformanceCounters.h"
 
 enum eSSSPSolutionType : uint8_t
 {
@@ -25,65 +26,65 @@ enum eSSSPSolutionType : uint8_t
     henrys,
 };
 
-typedef unsigned long long tPerfCounter;
+//struct tSSSPPerformanceCounters
+//{
+//	tPerfCounter nNodesVisited;
+//    tPerfCounter nAlreadyOptimal;
+//    tPerfCounter nBetterParentIndex;
+//    tPerfCounter nCannotRelax;
+//    tPerfCounter nRelaxationAttempts;
+//    tPerfCounter nRelaxations;
+//    tPerfCounter nCorrections;
+//    tPerfCounter nSpeculations;
+//    tPerfCounter nPasses;
+//
+//#define tSSSPPerformanceCountersMemberList nNodesVisited, nAlreadyOptimal, nBetterParentIndex, nCannotRelax, nRelaxationAttempts, nRelaxations, nCorrections, nSpeculations, nPasses
+//#define dumptSSSPPerformanceCounters dumpList(nNodesVisited, nAlreadyOptimal, nBetterParentIndex, nCannotRelax, nRelaxationAttempts, nRelaxations, nCorrections, nSpeculations, nPasses)
+//
+//    inline tSSSPPerformanceCounters(void)
+//    {
+//        clear();
+//    }
+//
+//    inline void clear(void)
+//    {
+//    	nNodesVisited = 0u;
+//        nAlreadyOptimal = 0u;
+//        nBetterParentIndex = 0u;
+//        nCannotRelax = 0u;
+//        nRelaxationAttempts = 0u;
+//        nRelaxations = 0u;
+//        nCorrections = 0u;
+//        nSpeculations = 0u;
+//        nPasses = 0u;
+//        return;
+//    }
+//
+//	inline tSSSPPerformanceCounters &operator+=(const tSSSPPerformanceCounters &rhs)
+//	{
+//		nNodesVisited += rhs.nNodesVisited;
+//		nAlreadyOptimal += rhs.nAlreadyOptimal;
+//		nBetterParentIndex += rhs.nBetterParentIndex;
+//		nCannotRelax += rhs.nCannotRelax;
+//		nRelaxationAttempts += rhs.nRelaxationAttempts;
+//		nRelaxations += rhs.nRelaxations;
+//		nCorrections += rhs.nCorrections;
+//		nSpeculations += rhs.nSpeculations;
+//
+//		return *this;
+//	}
+//};
 
-struct tSSSPPerformanceCounters
-{
-	tPerfCounter nNodesVisited;
-    tPerfCounter nAlreadyOptimal;
-    tPerfCounter nBetterParentIndex;
-    tPerfCounter nCannotRelax;
-    tPerfCounter nRelaxationAttempts;
-    tPerfCounter nRelaxations;
-    tPerfCounter nCorrections;
-    tPerfCounter nSpeculations;
-    tPerfCounter nPasses;
-
-#define tSSSPPerformanceCountersMemberList nNodesVisited, nAlreadyOptimal, nBetterParentIndex, nCannotRelax, nRelaxationAttempts, nRelaxations, nCorrections, nSpeculations, nPasses
-#define dumptSSSPPerformanceCounters dumpList(nNodesVisited, nAlreadyOptimal, nBetterParentIndex, nCannotRelax, nRelaxationAttempts, nRelaxations, nCorrections, nSpeculations, nPasses)
-
-    inline tSSSPPerformanceCounters(void)
-    {
-        clear();
-    }
-
-    inline void clear(void)
-    {
-    	nNodesVisited = 0u;
-        nAlreadyOptimal = 0u;
-        nBetterParentIndex = 0u;
-        nCannotRelax = 0u;
-        nRelaxationAttempts = 0u;
-        nRelaxations = 0u;
-        nCorrections = 0u;
-        nSpeculations = 0u;
-        nPasses = 0u;
-        return;
-    }
-
-	inline tSSSPPerformanceCounters &operator+=(const tSSSPPerformanceCounters &rhs)
-	{
-		nNodesVisited += rhs.nNodesVisited;
-		nAlreadyOptimal += rhs.nAlreadyOptimal;
-		nBetterParentIndex += rhs.nBetterParentIndex;
-		nCannotRelax += rhs.nCannotRelax;
-		nRelaxationAttempts += rhs.nRelaxationAttempts;
-		nRelaxations += rhs.nRelaxations;
-		nCorrections += rhs.nCorrections;
-		nSpeculations += rhs.nSpeculations;
-
-		return *this;
-	}
-};
-
+// Method to read and verify solution
 bool readSolution(const path &filepath, vector<nodeCost> &nodeCosts)
 {
 	tSSSPPerformanceCounters sumPerformanceCounter;
 	uint32_t sourceNode;
 	eSSSPSolutionType lastUsedMethod;
 	double solutionTime;
+	size_t nSolutions;
 
-//	char *temp;
+	// ParentNodeCosts will house the solutions from the solution file
 	vector<nodeCost> parentNodeCosts;
 
 	ifstream ifs { filepath };
@@ -94,8 +95,7 @@ bool readSolution(const path &filepath, vector<nodeCost> &nodeCosts)
 		exit(0);
 	}
 
-	size_t nSolutions;
-
+	// Read file
 	ifs.read((char *) &lastUsedMethod, sizeof(lastUsedMethod));
 	ifs.read((char *) &solutionTime, sizeof(solutionTime));
 	ifs.read((char *) &sourceNode, sizeof(sourceNode));
@@ -106,6 +106,7 @@ bool readSolution(const path &filepath, vector<nodeCost> &nodeCosts)
 	ifs.read((char *) parentNodeCosts.data(), sizeof(nodeCost) * nSolutions);
 	ifs.close();
 
+	// Compare the two vectors with operator defined in UtilityFunctions
 	if(parentNodeCosts == nodeCosts)
 	{
 		return true;

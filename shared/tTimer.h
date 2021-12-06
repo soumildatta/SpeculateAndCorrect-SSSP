@@ -8,6 +8,7 @@ using std::chrono::duration_cast;
 
 struct tTimer
 {
+	// Constructor starts the timer
     inline tTimer(void)
     {
         startTimer();
@@ -16,12 +17,14 @@ struct tTimer
 
     inline virtual ~tTimer(void) { return; }
 
+    // Method to start the timer
     inline void startTimer(void)
     {
         startTime = high_resolution_clock::now();
         return;
     }
 
+    // Calculates the time since the invocation of the constructor till the method call
     inline double getTime(void)
     {
         endTime = high_resolution_clock::now();
