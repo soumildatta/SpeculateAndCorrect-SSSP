@@ -1,7 +1,6 @@
 cmake_minimum_required(VERSION 3.0)
 
-set(GCC_COVERAGE_LINK_FLAGS    "-lgcov")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${GCC_COVERAGE_LINK_FLAGS} -O3 -std=c++17")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread -O3 -std=c++17")
 
 project(ParallelSpecAndCorr)
 
