@@ -1,10 +1,3 @@
-/*
- * tData.h
- *
- *  Created on: Nov 3, 2021
- *      Author: sdatta
- */
-
 #ifndef TDATA_H
 #define TDATA_H
 

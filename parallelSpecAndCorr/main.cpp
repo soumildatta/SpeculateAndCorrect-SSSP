@@ -296,7 +296,6 @@ void specAndCorr(tData &data)
 				   {
 					   tIndex specAddSlot { toAtomic(&data.speculationPool.addIndex)->fetch_add(1u, memory_order_acq_rel) % data.speculationPool.bufferSize };
 					   auto value { toAtomic(&data.speculationPool.pool[specAddSlot])->exchange(distalNodeIndex, memory_order_release) };
-					   // toAtomic(&data.speculationPool.pool[specAddSlot])->store(distalNodeIndex, memory_order_release);
 
 					   // New task in pool, add one to incomplete tasks
 					   toAtomic(&data.nIncompleteTasks)->fetch_add(1u, memory_order_release);

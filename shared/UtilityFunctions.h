@@ -108,9 +108,6 @@ inline string Format(const string format, ...)
 template<class T>
 inline atomic<T> *toAtomic(T *var) { return (atomic<T> *) var; }
 
-//template<class T>
-//inline atomic<T> *toAtomic(T &var) { return (atomic<T> *) &var; }
-
 // Handy == operator on vectors.
 template<class T>
 inline bool operator==(const vector<T> &lhs, const vector<T> &rhs)
@@ -218,7 +215,6 @@ inline ostream& operator<<(ostream &os, const C<T, A, Tn ...> &container)
     {
         os << entry << ",\n"s;
     }
-
     // Container close brace;
     return os << "}"s;
 }

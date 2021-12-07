@@ -1,10 +1,3 @@
-/*
- * tPool.h
- *
- *  Created on: Nov 3, 2021
- *      Author: sdatta
- */
-
 #ifndef TPOOL_H
 #define TPOOL_H
 
