@@ -27,6 +27,7 @@ using std::list;
 
 #include "UtilityFunctions.h"
 
+// An edge list record
 struct tEdgeListItem
 {
     inline tEdgeListItem(void) : proximalNodeIdx(~0u), distalNodeIdx(~0u), weight(~0u) { return; }
@@ -40,6 +41,7 @@ struct tEdgeListItem
     #define tEdgeListItemMemberList proximalNodeIdx, distalNodeIdx, weight
 };
 
+// Each line in the edge list file 
 struct tLineEntry
 {
 	string proximalNode;
