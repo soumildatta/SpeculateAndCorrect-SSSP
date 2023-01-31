@@ -1,6 +1,6 @@
 # Speculate And Correct Algorithm
 
-This project was created as my senior project.
+This project was created as my capstone senior project.
 
 This project proposes an optimized version of the Bellman-Ford SSSP algorithm, which can carry out the SSSP algorithm more efficiently than the standard Bellman-Ford algorithm while retaining the Bellman-Ford characteristics such as detecting negative cycles in the graph.
 
