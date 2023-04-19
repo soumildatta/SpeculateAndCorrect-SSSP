@@ -11,7 +11,8 @@ The basis of optiimzation for this new algorithm is the traversal of the graph i
 **Hardware Requirements:**
 
 - CPU with support for more than 1 thread
-  **Software Requirements:**
+
+**Software Requirements:**
 - UNIX-Like Operating System (Linux, macOS, etc.)
 - g++ compiler (GCC) to compile C++ code
   - To install GCC on Ubuntu, follow the steps from the link [here](https://linuxize.com/post/how-to-install-gcc-compiler-on-ubuntu-18-04/).
