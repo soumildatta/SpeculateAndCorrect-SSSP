@@ -82,7 +82,7 @@ Casual users who just want to view the performance improvement, generate statist
 ### Usage for Researchers
 
 Those in academia would want to assess the code and fine tune things, as well as improve upon the existing code. To do this, the best option for running the experiments is to use the Eclipse CDT IDE.
-
+<!--
 1. After cloning the repository to the local machine, start eclipse and set the eclipse workspace to the project directory as shown in the example below (Note: your project directory may be located somewhere else):
    ![image](https://user-images.githubusercontent.com/35431692/143920176-1446674f-416b-4c2c-8635-d6ce89001d9d.png)
 2. Now, the experiment folders can be added as projects into Eclipse.
@@ -120,6 +120,7 @@ Those in academia would want to assess the code and fine tune things, as well as
 
 6. Now, click the run button (boxed in red on the visual below) on the top bar and the project should start by processing the graph.
    ![image](https://user-images.githubusercontent.com/35431692/143920704-2b922420-6fcb-4e16-b3f9-0bbd5f2bfc37.png)
+-->
 
 ### Command Line Arguments
 
